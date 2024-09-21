@@ -3,7 +3,7 @@ import java.io.IOException;
 
 public class Main {
     public void main(String[] args) throws Exception {
-        private ControleDb controle;
+        ControlDb controle;
         private Crud crud;
         Scanner scan = new Scanner(System.in);
         int opc = 0;
@@ -22,7 +22,7 @@ public class Main {
                     String caminho = "C:\\Users\\rodri\\Desktop\\GameList\\GameList-v1\\GameList-v1\\TopGames\\games.csv";
                     System.out.print("\033c");// Limpa a tela(ANSI escape character)
                     try {
-                        controle.carregarCSV(caminho);
+                        controle.LoadCsv(caminho);
                         System.out.println("Carga de dados completa!!!");
                     } catch (Exception e) {
                         e.printStackTrace();

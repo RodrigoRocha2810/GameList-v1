@@ -1,13 +1,14 @@
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 public class ControlDb {
+    private Integer maxID = 0;
+
     private static final String DB_NAME_OUTPUT = ".\\data.games.db";
 
     private Path DbPath = Paths.get(DB_NAME_OUTPUT);
@@ -20,61 +21,51 @@ public class ControlDb {
         raf = new RandomAccessFile(DbPath.toFile(), "rw");
     }
 
-    public void LoadCsv(String file){
 
-
-
+    //metodo para transferir o csv para um registro game e depois para o arquivo db
+    public void LoadCsv(String CSVfile) throws IOException{
+        listaIds.clear();
+        maxID = 0;
+        BufferedReader bf;
+        Path p = Paths.get(CSVfile);
+        //usa as bibliotecas bufferdRead e fileReader apra facilitar a leitura do csv
+        if (p.toFile().exists() && p.toFile().isFile()) {
+            bf = new BufferedReader(new FileReader(p.toFile()));
+            raf.seek(0);
+            raf.setLength(0);
+            raf.writeInt(maxID);
+            //pula primeira linha(cabecerio)
+            String line = bf.readLine();
+            //loop para ler o csv linha a linha e converter no registro Game
+            while ((line = bf.readLine()) != null) {
+                Game registro = CsvLineToGame(line);
+                if (registro.getTitulo().equals(""))
+                    continue;
+                raf.write(registro.gerarRegistro());
+            }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        }
     }
 
 private Game CsvLineToGame(String linha) {
-        Game retorno = new Game();
+        Game game = new Game();
 
         try {
-            String[] splited = linha.replace(";", ",").split("\",\"");
-            for (int i = 0; i < splited.length; i++) {
-
-                String s = splited[i].replace("\"", "");
-                s = new String(s.getBytes(), StandardCharsets.UTF_8);
-                switch (i) {
-                    case 0:
-                        retorno.setTitulo(s);
-                        break;
-                    case 1:
-                        retorno.setGeneros(Stream.of(s.split(",")).collect(Collectors.toList()));
-                        break;
-                    case 2:
-                        retorno.setAvaliacao(Float.parseFloat(s));
-                        break;
-                    case 3:
-                        retorno.setVotos(Integer.parseInt(s.replace(",", "")));
-                        break;
-                    case 4:
-                        break;
-                    case 5:
-                        retorno.setAnoLancamento(
-                                Integer.parseInt(s.replace("(", "").replace(")", "").substring(0, 4)));
-
-                        if (s.contains("–"))
-                            retorno.setAnoEncerramento(s.indexOf(")") - s.indexOf("–") >= 4
-                                    ? Integer.parseInt(s.substring(s.indexOf("–") + 1, s.indexOf(")")))
-                                    : 0);
-                        else
-                            retorno.setAnoEncerramento(retorno.getAnoLancamento());
-                        break;
-                    case 6:
-                        retorno.setResumo(s);
-                        break;
-                    case 7:
-                        retorno.setElenco(Stream.of(s.split(",")).collect(Collectors.toList()));
-                        break;
-                }
-                if (i > 7)
-                    break;
-            }
+            
         } catch (Exception e) {
             // e.printStackTrace();
         }
-        return retorno;
+        return game;
     }
 
 

@@ -4,6 +4,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 
 public class Game {
@@ -11,7 +14,7 @@ public class Game {
 
     private String titulo;
 
-    private Integer release_Date;
+    private short release_Date;
 
     private List<String> team;
 
@@ -20,7 +23,7 @@ public class Game {
     private Integer nreviews;
 
     //add
-    private Integer wish_list;
+    private Integer wishlist;
 
     private List<String> genres;
 
@@ -89,7 +92,7 @@ public class Game {
         return nreviews;
     }
 
-    public Integer getrelease_Date() {
+    public short getrelease_Date() {
         return release_Date;
     }
 
@@ -126,12 +129,17 @@ public class Game {
         this.rating = rating;
     }
 
+    public void setwishlist(int wishlist) {
+        this.wishlist = wishlist;
+    }
+
     public void setnreviews(Integer nreviews) {
         this.nreviews = nreviews;
     }
 
-    public void setrelease_Date(Integer release_Date) {
-        this.release_Date = release_Date;
+    public void setrelease_Date(String release_Date) {
+        this.release_Date = calculateDays(release_Date);
+        
     }
 
     public void setreview(String review) {
@@ -151,8 +159,22 @@ public class Game {
     }
     
     
-    
-    
+    //caldula o numero de dias do lacamento desde 1970
+    public static short calculateDays(String dateString) {
+  
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        
+     
+        LocalDate inputDate = LocalDate.parse(dateString, formatter);
+        
+
+        LocalDate referenceDate = LocalDate.of(2025, 1, 1);
+        
+       
+        long daysBetween = ChronoUnit.DAYS.between(inputDate, referenceDate);
+      
+        return (short) daysBetween;
+    }
     
 
     
