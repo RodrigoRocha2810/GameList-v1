@@ -1,14 +1,16 @@
 import java.util.Scanner;
-import java.io.IOException;
 
 public class Main {
-    public void main(String[] args) throws Exception {
-        ControlDb controle;
-        private Crud crud;
+
+
+
+     public static void main(String[] args) throws Exception {
+        ControlDb controle = new ControlDb();
+        //private Crud crud;
         Scanner scan = new Scanner(System.in);
         int opc = 0;
         while (opc != 3) {
-        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        
         System.out.println("===============SELECIONE A OPÇÃO DESEJADA==============");
         System.out.println("1. Carregar dados CSV\n2. Operar sobre arquivo binario\n3. Sair");
         
@@ -23,22 +25,69 @@ public class Main {
                     System.out.print("\033c");// Limpa a tela(ANSI escape character)
                     try {
                         controle.LoadCsv(caminho);
+                        System.out.print("\033c");// Limpa a tela(ANSI escape character)
                         System.out.println("Carga de dados completa!!!");
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                     break;
-                case 2:
-                    // crud.setScan(scan);
-                    // crud.setController(controle);
-                    this.crud = new Crud(controle,scan);
-                    System.out.print("\033c");// Limpa a tela(ANSI escape character)
-                    crud.run();
-                    break;
-                default:
-                break;
+                // case 2:
+                //     // crud.setScan(scan);
+                //     // crud.setController(controle);
+                //     this.crud = new Crud(controle,scan);
+                //     System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                //     crud.run();
+                //     break;
+                // default:
+                // break;
             }
         }
         scan.close();
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

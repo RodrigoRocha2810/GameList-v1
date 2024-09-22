@@ -1,3 +1,4 @@
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,12 +8,17 @@ import java.util.Objects;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 public class Game {
+
     private Integer id;
 
-    private String titulo;
+    private String title;
 
     private short release_Date;
 
@@ -29,25 +35,13 @@ public class Game {
 
     private String review;
 
-    
-
-    
-
-    
-
-
-    
-
-    
-
     private Date cadastro;
 
     private Boolean excluido = false;
 
-    
-     public Game() {
+    public Game() {
         this.id = -1;
-        this.titulo = "";
+        this.title = "";
         this.genres = new ArrayList<String>();
         this.rating = 0f;
         this.nreviews = 0;
@@ -57,27 +51,96 @@ public class Game {
         this.cadastro = null;
         this.excluido = false;
     }
-    
+
+    public Game(String csvLine) {
+        // Assuming the CSV format is: id, title, team, rating, nreviews, wishlist, genres, review
+        String[] values = csvLine.split(";"); // Split by comma or any delimiter
+
+        this.id = Integer.parseInt(values[0].trim()); // Convert String to Integer
+        this.title = values[1].trim(); // Parse title
+
+        // Parse release_Date as a short
+        this.release_Date = calculateDays(values[2]);
+
+        // Parse the team into a List<String> (assuming team members are separated by semicolons)
+        this.team = Arrays.asList(values[3].trim().split(":"));
+
+        this.rating = Float.parseFloat(values[4].trim()); // Convert to Float
+        this.nreviews = Integer.parseInt(values[5].trim()); // Convert to Integer
+        this.wishlist = Integer.parseInt(values[6].trim()); // Convert to Integer
+
+        // Parse the genres into a List<String> (assuming genres are separated by semicolons)
+        this.genres = Arrays.asList(values[7].trim().split(":"));
+
+        this.review = values[8].trim();  // Trim the review string
+    }
+
     @Override
     public String toString() {
-        return "Registro encontrado!\n" +
-                "id=" + id +
-                ", titulo='" + titulo + '\'' +
-                ", genres=" + genres +
-                ", rating=" + rating +
-                ", nreviews=" + nreviews +
-                ", release_Date=" + release_Date +
-                ", review='" + review + '\'' +
-                ", team=" + team +
-                ", cadastro=" + cadastro ;
+        return "Registro encontrado!\n"
+                + "id=" + id
+                + ", title='" + title + '\''
+                + ", release_Date=" + release_Date
+                + ", team=" + team
+                + ", rating=" + rating
+                + ", nreviews=" + nreviews
+                + ", wishlist=" + wishlist
+                + ", genres=" + genres
+                + ", review='" + review;
     }
+    //caldula o numero de dias do lacamento desde 1970 ate 2025
+    public static short calculateDays(String dateString) {
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        LocalDate inputDate = LocalDate.parse(dateString, formatter);
+
+        LocalDate referenceDate = LocalDate.of(2025, 1, 1);
+
+        long daysBetween = ChronoUnit.DAYS.between(inputDate, referenceDate);
+
+        return (short) daysBetween;
+    }
+
+// Tranforma o objeto game para um vetor de bytes seguindo as regras de escrita
+    public byte[] toByteArray() throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(baos);
+        dos.writeInt(this.id);
+        dos.writeBoolean(excluido);
+        dos.writeUTF(this.title);
+        dos.writeShort(this.release_Date);
+        // Indicador de tamnho do campo de tam variado do time
+        dos.writeByte(this.team.size());
+        for (String teams : this.team) {
+            dos.writeUTF(teams);
+        }
+        ////
+        dos.writeFloat(this.rating);
+        dos.writeInt(this.nreviews);
+        dos.writeInt(this.wishlist);
+        // Indicador de tamnho do campo de tam variado dos generos
+        dos.writeByte(this.genres.size());
+        for (String genre : this.genres) {
+            dos.writeUTF(genre);
+        }
+        ////
+        dos.writeUTF(this.review);
+        return baos.toByteArray();
+    }
+
+
+
+
+
+
     // Getters
     public Integer getId() {
         return id;
     }
 
-    public String getTitulo() {
-        return titulo;
+    public String gettitle() {
+        return title;
     }
 
     public List<String> getgenres() {
@@ -117,8 +180,8 @@ public class Game {
         this.id = id;
     }
 
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
+    public void settitle(String title) {
+        this.title = title;
     }
 
     public void setgenres(List<String> genres) {
@@ -139,7 +202,7 @@ public class Game {
 
     public void setrelease_Date(String release_Date) {
         this.release_Date = calculateDays(release_Date);
-        
+
     }
 
     public void setreview(String review) {
@@ -157,247 +220,6 @@ public class Game {
     public void setExcluido(Boolean excluido) {
         this.excluido = excluido;
     }
-    
-    
-    //caldula o numero de dias do lacamento desde 1970
-    public static short calculateDays(String dateString) {
-  
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        
-     
-        LocalDate inputDate = LocalDate.parse(dateString, formatter);
-        
-
-        LocalDate referenceDate = LocalDate.of(2025, 1, 1);
-        
-       
-        long daysBetween = ChronoUnit.DAYS.between(inputDate, referenceDate);
-      
-        return (short) daysBetween;
-    }
-    
-
-    
-    
-    
-
-    // public byte[] gerarRegistro() {
-    //     byte[] retorno, aux;
-
-    //     // retorno = BytesUtils.toBytes(excluido);
-    //     retorno = new byte[0];
-
-    //     aux = BytesUtils.toBytes(id);
-    //     retorno = Arrays.copyOf(retorno, retorno.length + aux.length);
-    //     System.arraycopy(aux, 0, retorno, retorno.length - aux.length, aux.length);
-
-    //     aux = BytesUtils.toBytes(Short.valueOf(Integer.valueOf(titulo.length()).shortValue()));
-    //     retorno = Arrays.copyOf(retorno, retorno.length + aux.length);
-    //     System.arraycopy(aux, 0, retorno, retorno.length - aux.length, aux.length);
-
-    //     aux = BytesUtils.toBytes(titulo);
-    //     retorno = Arrays.copyOf(retorno, retorno.length + aux.length);
-    //     System.arraycopy(aux, 0, retorno, retorno.length - aux.length, aux.length);
-
-    //     aux = BytesUtils.toBytes(rating);
-    //     retorno = Arrays.copyOf(retorno, retorno.length + aux.length);
-    //     System.arraycopy(aux, 0, retorno, retorno.length - aux.length, aux.length);
-
-    //     aux = BytesUtils.toBytes(nreviews);
-    //     retorno = Arrays.copyOf(retorno, retorno.length + aux.length);
-    //     System.arraycopy(aux, 0, retorno, retorno.length - aux.length, aux.length);
-
-    //     if (Objects.nonNull(genres) && genres.size() > 0) {
-
-    //         aux = BytesUtils.toBytes(Short.valueOf(Integer.valueOf(genres.size()).shortValue()));
-    //         retorno = Arrays.copyOf(retorno, retorno.length + aux.length);
-    //         System.arraycopy(aux, 0, retorno, retorno.length - aux.length, aux.length);
-
-    //         for (String gen : genres) {
-    //             aux = BytesUtils.toBytes(Short.valueOf(Integer.valueOf(gen.length()).shortValue()));
-    //             retorno = Arrays.copyOf(retorno, retorno.length + aux.length);
-    //             System.arraycopy(aux, 0, retorno, retorno.length - aux.length, aux.length);
-
-    //             aux = BytesUtils.toBytes(gen);
-    //             retorno = Arrays.copyOf(retorno, retorno.length + aux.length);
-    //             System.arraycopy(aux, 0, retorno, retorno.length - aux.length, aux.length);
-    //         }
-
-    //     } else {
-    //         aux = BytesUtils.toBytes(Short.valueOf("0"));
-    //         retorno = Arrays.copyOf(retorno, retorno.length + aux.length);
-    //         System.arraycopy(aux, 0, retorno, retorno.length - aux.length, aux.length);
-    //     }
-
-    //     aux = BytesUtils.toBytes(Short.valueOf(Integer.valueOf(review.length()).shortValue()));
-    //     retorno = Arrays.copyOf(retorno, retorno.length + aux.length);
-    //     System.arraycopy(aux, 0, retorno, retorno.length - aux.length, aux.length);
-
-    //     aux = BytesUtils.toBytes(review);
-    //     retorno = Arrays.copyOf(retorno, retorno.length + aux.length);
-    //     System.arraycopy(aux, 0, retorno, retorno.length - aux.length, aux.length);
-
-    //     aux = BytesUtils.toBytes(release_Date);
-    //     retorno = Arrays.copyOf(retorno, retorno.length + aux.length);
-    //     System.arraycopy(aux, 0, retorno, retorno.length - aux.length, aux.length);
-
-    //     aux = BytesUtils.toBytes(anoEncerramento);
-    //     retorno = Arrays.copyOf(retorno, retorno.length + aux.length);
-    //     System.arraycopy(aux, 0, retorno, retorno.length - aux.length, aux.length);
-
-    //     if (Objects.nonNull(team) && team.size() > 0) {
-
-    //         aux = BytesUtils.toBytes(Short.valueOf(Integer.valueOf(team.size()).shortValue()));
-    //         retorno = Arrays.copyOf(retorno, retorno.length + aux.length);
-    //         System.arraycopy(aux, 0, retorno, retorno.length - aux.length, aux.length);
-
-    //         for (String e : team) {
-    //             aux = BytesUtils.toBytes(Short.valueOf(Integer.valueOf(e.length()).shortValue()));
-    //             retorno = Arrays.copyOf(retorno, retorno.length + aux.length);
-    //             System.arraycopy(aux, 0, retorno, retorno.length - aux.length, aux.length);
-
-    //             aux = BytesUtils.toBytes(e);
-    //             retorno = Arrays.copyOf(retorno, retorno.length + aux.length);
-    //             System.arraycopy(aux, 0, retorno, retorno.length - aux.length, aux.length);
-    //         }
-
-    //     } else {
-    //         aux = BytesUtils.toBytes(Short.valueOf("0"));
-    //         retorno = Arrays.copyOf(retorno, retorno.length + aux.length);
-    //         System.arraycopy(aux, 0, retorno, retorno.length - aux.length, aux.length);
-    //     }
-
-    //     if (Objects.isNull(cadastro))
-    //         gerarDataCadastro();
-
-    //     aux = BytesUtils.toBytes(Objects.isNull(cadastro) ? 0L : cadastro.getTime());
-    //     retorno = Arrays.copyOf(retorno, retorno.length + aux.length);
-    //     System.arraycopy(aux, 0, retorno, retorno.length - aux.length, aux.length);
-
-    //     aux = retorno;
-    //     retorno = BytesUtils.toBytes(Short.valueOf(Integer.valueOf(retorno.length).shortValue()));
-    //     retorno = Arrays.copyOf(retorno, retorno.length + aux.length);
-    //     System.arraycopy(aux, 0, retorno, retorno.length - aux.length, aux.length);
-
-    //     aux = retorno;
-    //     retorno = BytesUtils.toBytes(excluido);
-    //     retorno = Arrays.copyOf(retorno, retorno.length + aux.length);
-    //     System.arraycopy(aux, 0, retorno, retorno.length - aux.length, aux.length);
-
-    //     return retorno;
-    // }
-
-    
-    // public static Game desserializar(byte[] dados) {
-    //     Game retorno = new Game();
-
-    //     byte[] auxInt = new byte[4], auxLong = new byte[8], auxShort = new byte[2], auxString;
-    //     Short tam = 0, field = 1, count = 0;
-    //     Integer pos = 0;
-
-    //     while (pos < dados.length) {
-    //         switch (field) {
-    //             case 1:
-    //                 System.arraycopy(dados, pos, auxInt, 0, auxInt.length);
-    //                 retorno.setId(BytesUtils.fromBytes(auxInt, retorno.getId().getClass()));
-    //                 pos += auxInt.length;
-    //                 break;
-    //             case 2:
-    //                 System.arraycopy(dados, pos, auxShort, 0, auxShort.length);
-    //                 tam = BytesUtils.fromBytes(auxShort, tam.getClass());
-    //                 pos += auxShort.length;
-
-    //                 auxString = new byte[tam];
-    //                 System.arraycopy(dados, pos, auxString, 0, tam);
-    //                 retorno.setTitulo(BytesUtils.fromBytes(auxString, retorno.getTitulo().getClass()));
-    //                 pos += auxString.length;
-    //                 break;
-    //             case 3:
-    //                 System.arraycopy(dados, pos, auxInt, 0, auxInt.length);
-    //                 retorno.setrating(BytesUtils.fromBytes(auxInt, retorno.getrating().getClass()));
-    //                 pos += auxInt.length;
-    //                 break;
-    //             case 4:
-    //                 System.arraycopy(dados, pos, auxInt, 0, auxInt.length);
-    //                 retorno.setnreviews(BytesUtils.fromBytes(auxInt, retorno.getnreviews().getClass()));
-    //                 pos += auxInt.length;
-    //                 break;
-    //             case 5:
-    //                 System.arraycopy(dados, pos, auxShort, 0, auxShort.length);
-    //                 count = BytesUtils.fromBytes(auxShort, tam.getClass());
-    //                 pos += auxShort.length;
-
-    //                 if (Objects.isNull(retorno.getgenres())) {
-    //                     retorno.setgenres(new ArrayList<String>());
-    //                 }
-
-    //                 for (int i = 0; i < count; i++) {
-    //                     System.arraycopy(dados, pos, auxShort, 0, auxShort.length);
-    //                     tam = BytesUtils.fromBytes(auxShort, tam.getClass());
-    //                     pos += auxShort.length;
-
-    //                     auxString = new byte[tam];
-    //                     System.arraycopy(dados, pos, auxString, 0, tam);
-    //                     retorno.getgenres().add(BytesUtils.fromBytes(auxString, retorno.getTitulo().getClass()));
-    //                     pos += auxString.length;
-    //                 }
-    //                 break;
-    //             case 6:
-    //                 System.arraycopy(dados, pos, auxShort, 0, auxShort.length);
-    //                 tam = BytesUtils.fromBytes(auxShort, tam.getClass());
-    //                 pos += auxShort.length;
-
-    //                 auxString = new byte[tam];
-    //                 System.arraycopy(dados, pos, auxString, 0, tam);
-    //                 retorno.setreview(BytesUtils.fromBytes(auxString, retorno.getTitulo().getClass()));
-    //                 pos += auxString.length;
-    //                 break;
-    //             case 7:
-    //                 System.arraycopy(dados, pos, auxInt, 0, auxInt.length);
-    //                 retorno.setrelease_Date(BytesUtils.fromBytes(auxInt, retorno.getrelease_Date().getClass()));
-    //                 pos += auxInt.length;
-    //                 break;
-    //             case 8:
-    //                 System.arraycopy(dados, pos, auxInt, 0, auxInt.length);
-    //                 retorno.setAnoEncerramento(BytesUtils.fromBytes(auxInt, retorno.getAnoEncerramento().getClass()));
-    //                 pos += auxInt.length;
-    //                 break;
-    //             case 9:
-    //                 System.arraycopy(dados, pos, auxShort, 0, auxShort.length);
-    //                 count = BytesUtils.fromBytes(auxShort, tam.getClass());
-    //                 pos += auxShort.length;
-
-    //                 if (Objects.isNull(retorno.getteam())) {
-    //                     retorno.setteam(new ArrayList<String>());
-    //                 }
-
-    //                 for (int i = 0; i < count; i++) {
-    //                     System.arraycopy(dados, pos, auxShort, 0, auxShort.length);
-    //                     tam = BytesUtils.fromBytes(auxShort, tam.getClass());
-    //                     pos += auxShort.length;
-
-    //                     auxString = new byte[tam];
-    //                     System.arraycopy(dados, pos, auxString, 0, tam);
-    //                     retorno.getteam().add(BytesUtils.fromBytes(auxString, retorno.getTitulo().getClass()));
-    //                     pos += auxString.length;
-    //                 }
-    //                 break;
-    //             case 10:
-    //                 System.arraycopy(dados, pos, auxLong, 0, auxLong.length);
-    //                 retorno.setCadastro(
-    //                         new Date(BytesUtils.fromBytes(auxLong, Long.valueOf(0l).getClass()).longValue()));
-    //                 pos += auxInt.length;
-    //                 break;
-    //             default:
-    //                 pos++;
-    //                 break;
-    //         }
-
-    //         field++;
-    //     }
-    //     return retorno;
-    // }
-
 
 
 }

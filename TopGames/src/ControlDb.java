@@ -6,6 +6,7 @@ import java.io.RandomAccessFile;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+
 public class ControlDb {
     private Integer maxID = 0;
 
@@ -38,10 +39,11 @@ public class ControlDb {
             String line = bf.readLine();
             //loop para ler o csv linha a linha e converter no registro Game
             while ((line = bf.readLine()) != null) {
-                Game registro = CsvLineToGame(line);
-                if (registro.getTitulo().equals(""))
-                    continue;
-                raf.write(registro.gerarRegistro());
+                byte[] b;
+                Game registro = new Game(line);
+                b = registro.toByteArray();
+                raf.writeShort(b.length);
+               raf.write(b);
             }
         
         
@@ -57,16 +59,6 @@ public class ControlDb {
         }
     }
 
-private Game CsvLineToGame(String linha) {
-        Game game = new Game();
-
-        try {
-            
-        } catch (Exception e) {
-            // e.printStackTrace();
-        }
-        return game;
-    }
 
 
 
@@ -75,9 +67,7 @@ private Game CsvLineToGame(String linha) {
 
 
 
-
-
-
+  
 
 
 
