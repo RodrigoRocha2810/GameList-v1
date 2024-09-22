@@ -107,7 +107,6 @@ public class Game {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
         dos.writeInt(this.id);
-        dos.writeBoolean(excluido);
         dos.writeUTF(this.title);
         dos.writeShort(this.release_Date);
         // Indicador de tamnho do campo de tam variado do time
@@ -202,6 +201,11 @@ public class Game {
 
     public void setrelease_Date(String release_Date) {
         this.release_Date = calculateDays(release_Date);
+
+    }
+
+    public void setrelease_Date(short release_Date) {
+        this.release_Date = release_Date;
 
     }
 

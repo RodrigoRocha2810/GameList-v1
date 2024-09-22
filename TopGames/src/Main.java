@@ -6,7 +6,7 @@ public class Main {
 
      public static void main(String[] args) throws Exception {
         ControlDb controle = new ControlDb();
-        //private Crud crud;
+        Crud crud = new Crud();
         Scanner scan = new Scanner(System.in);
         int opc = 0;
         while (opc != 3) {
@@ -31,15 +31,12 @@ public class Main {
                         e.printStackTrace();
                     }
                     break;
-                // case 2:
-                //     // crud.setScan(scan);
-                //     // crud.setController(controle);
-                //     this.crud = new Crud(controle,scan);
-                //     System.out.print("\033c");// Limpa a tela(ANSI escape character)
-                //     crud.run();
-                //     break;
-                // default:
-                // break;
+                case 2:
+                    System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                    crud.run();
+                    break;
+                default:
+                break;
             }
         }
         scan.close();
