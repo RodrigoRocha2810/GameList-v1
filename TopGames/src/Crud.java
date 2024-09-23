@@ -1,5 +1,6 @@
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -28,13 +29,13 @@ public void run() throws IOException {
                     pesquisar();
                     break;
                 case 2:
-                    //inserir();
+                    inserir();
                     break;
                 case 3:
                   //  alterar();
                     break;
                 case 4:
-                   // deletar();
+                    deletar();
                     break;
                 case 9:
                     active = false;
@@ -48,9 +49,86 @@ public void run() throws IOException {
     }
 
 
+    private void deletar() {
+
+        try {
+            if (Objects.isNull(game)) {
+
+                System.out.print(
+                        "Voc\u00EA precisa buscar um registro para excluir. Digite o ID do registro que quer excluir: ");
+                game = controller.getById(scan.nextInt());
+
+            }
+            System.out.println("Confirma a exclus\u00E3o (S/N)? ");
+            String aux = scan.next();
+            if (aux.toUpperCase().charAt(0) == 'S') {
+                controller.deletar(game);
+            }
+        } catch (Exception e) {
+            System.out.println("Ocorreu um erro ao excluir\n");
+            System.out.println("Erro: " + e.getMessage());
+        }
+    }
 
 
 
+
+    private void inserir() {
+        game = null;
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+         scan.nextLine();
+        ////
+        System.out.print("Informe o Título do game: ");
+        game = new Game();
+        game.settitle(scan.nextLine());
+        scan.nextLine();
+        ////
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        System.out.print("Informe o ano de Lançamento em dd/mm/yyyy: ");
+        game.setrelease_Date(scan.nextLine());
+        scan.nextLine();
+        ////
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        System.out.print("Informe o time de desenvolvimento do game (separado por vírgulas): ");
+        String aux = scan.nextLine();
+        game.setteam(Arrays.asList(aux.split(",")));
+        scan.nextLine();
+        ////
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        System.out.print("Informe a avaliacao de 1 a 5: ");
+        game.setrating(scan.nextFloat());
+        scan.nextLine();
+        ////
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        System.out.print("Informe o número total de reviews: ");
+        game.setnreviews(scan.nextInt());
+        scan.nextLine();
+        ////
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        System.out.print("Informe o número total de usuarios que colocaram na wish list: ");
+        game.setwishlist(scan.nextInt());
+        scan.nextLine();
+        ////
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        System.out.print("Informe os generos do game (separado por vírgulas): ");
+        String aux2 = scan.nextLine();
+        game.setgenres(Arrays.asList(aux2.split(",")));
+        scan.nextLine();
+        ////
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        System.out.print("Informe um review do game: ");
+        game.setreview(scan.nextLine());
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        scan.nextLine();
+        try {
+            controller.save(game);
+
+        } catch (Exception e) {
+            System.out.print("Ocorreu um erro ao salvar a entidade em arquivo\n");
+            System.out.print("Erro: " + e.getMessage());
+        }
+
+    }
 
     private void pesquisar() {
         Integer ID = null;

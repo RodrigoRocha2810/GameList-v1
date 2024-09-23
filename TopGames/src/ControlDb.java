@@ -78,9 +78,6 @@ public class ControlDb {
                     lapide = raf.readBoolean();
                     tamReg = raf.readShort();
                     idReg = raf.readInt();
-                    if(idReg == 127){
-                        System.out.println("here");
-                    }
 
                     if (Objects.equals(idReg, id) && !lapide) {
                         // Retorna 7 posições para retornar ao primeiro byte referente ao registro (byte
@@ -93,10 +90,8 @@ public class ControlDb {
                         // Só retorna se o registro estiver com a lápide como false (registro valido);
                         // Se não for válido segue procurando por um registro válido pro ID e com lápide
                         // falsa
-                       
-                            return retorno;
+                        return retorno;
                     }
-
 
                     raf.seek(raf.getFilePointer() + (tamReg - 4));
                 } catch (Exception e) {
@@ -110,9 +105,9 @@ public class ControlDb {
         }
         return null;
     }
-
-
-    private Game bdToRam() throws IOException{
+   
+    //Le o arquivo para uma entidade game
+    private Game bdToRam() throws IOException {
         Short tamAux;
         byte count;
         Game retorno = new Game();
@@ -161,5 +156,91 @@ public class ControlDb {
         /////
         return retorno;
     }
+    // Metodos alterar e inserir
+    public Game save(Game r) throws Exception {
+        if (Objects.nonNull(raf)) {
+            // Ela diferencia somente pela presenta ou não de um ID válido na entidade
+            // enviada como parametro.
+            // Uma entidade nova gera Id negativo e é tratada na primeira condição; Caso a a
+            // entidade possua um id
+            // válido; o registro antigo será marcado como "excluido" (lapide = true) e o
+            // registro será escrito no fim do arquivo;
+            // Registros inválidos são tratados após a ordenacao do arquivo;
+            
+        
+            if (r.getId() <= 0) {
+                // Criação
+                raf.seek(0);
+                r.setId(raf.readInt());
+                raf.seek(raf.length());
+                byte[] b = r.toByteArray();
+                raf.writeBoolean(false);
+                raf.writeShort(b.length);
+                raf.write(b);
+                
 
-}
+
+
+                raf.seek(0);
+                raf.writeInt(r.getId()+1);
+                System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                System.out.printf("Id do anime inserido %d\n", r.getId());
+            } else {
+                // Atualização
+
+                // System.out.println("atualizando" + r.getTitulo());
+                // Thread.sleep(5000);
+                // raf.seek(4);
+                // Boolean lapide;
+                // Integer id;
+                // Short tam;
+                // while (raf.getFilePointer() < raf.length()) {
+                //     lapide = raf.readBoolean();
+                //     tam = raf.readShort();
+                //     id = raf.readInt();
+                //     if (r.getId().equals(id)) {
+                //         if (!lapide) {
+                //             raf.seek(raf.getFilePointer() - 7);
+                //             raf.writeBoolean(true);
+                //             raf.seek(raf.length());
+                //             raf.write(r.gerarRegistro());
+                //             break;
+                //         }
+                //     }
+                //     raf.seek(raf.getFilePointer() + tam - 4);
+                // }
+            }
+        }
+        return r;
+    }
+//Metodo deletar
+    public void deletar(Game r) throws Exception {
+        Integer id;
+        Short tam;
+        Boolean lapide;
+        raf.seek(4);
+
+        while (raf.getFilePointer() < raf.length()) {
+            lapide = raf.readBoolean();
+            tam = raf.readShort();
+            id = raf.readInt();
+            if (id.equals(r.getId()) && !lapide) {
+                raf.seek(raf.getFilePointer() - 7);
+                raf.writeBoolean(true);
+                break;
+            }
+            raf.seek(raf.getFilePointer() + tam - 4);
+        }
+
+    }
+
+
+
+
+
+
+
+
+    }
+
+
