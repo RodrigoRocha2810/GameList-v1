@@ -62,6 +62,7 @@ public class ControlDb {
     //pesquisa sequencial por id
     public Game getById(Integer id) throws Exception {
         if (Objects.nonNull(raf)) {
+            long pointer;
             Game retorno = new Game();
             raf.seek(0);
             Integer maxID = raf.readInt();
@@ -84,9 +85,10 @@ public class ControlDb {
                         // de lápide)
                         // Sendo 7 bytes pela leitura do lápide (1 byte), leitura do tamanho (2 bytes) e
                         // leitura do ID para fazer a comparação (4 bytes)
-                        raf.seek(raf.getFilePointer() - 7);
+                        pointer = raf.getFilePointer() - 7;
+                        raf.seek(pointer);
                         retorno = bdToRam();
-
+                        raf.seek(pointer);
                         // Só retorna se o registro estiver com a lápide como false (registro valido);
                         // Se não for válido segue procurando por um registro válido pro ID e com lápide
                         // falsa
@@ -186,52 +188,42 @@ public class ControlDb {
                 System.out.print("\033c");// Limpa a tela(ANSI escape character)
                 System.out.printf("Id do anime inserido %d\n", r.getId());
             } else {
-                // Atualização
 
-                // System.out.println("atualizando" + r.getTitulo());
-                // Thread.sleep(5000);
-                // raf.seek(4);
-                // Boolean lapide;
-                // Integer id;
-                // Short tam;
-                // while (raf.getFilePointer() < raf.length()) {
-                //     lapide = raf.readBoolean();
-                //     tam = raf.readShort();
-                //     id = raf.readInt();
-                //     if (r.getId().equals(id)) {
-                //         if (!lapide) {
-                //             raf.seek(raf.getFilePointer() - 7);
-                //             raf.writeBoolean(true);
-                //             raf.seek(raf.length());
-                //             raf.write(r.gerarRegistro());
-                //             break;
-                //         }
-                //     }
-                //     raf.seek(raf.getFilePointer() + tam - 4);
-                // }
+
+
+
+
+
+
+
+
+
+
+
+
+                else{
+              //Atualização
+
+                System.out.println("atualizando" + r.gettitle());
+                Thread.sleep(5000);
+                    
+                            raf.seek(raf.getFilePointer() - 7);
+                            raf.writeBoolean(true);
+                            raf.seek(raf.length());
+                            raf.write(r.gerarRegistro());
+                            break;
+                        }
+                    }
+                    raf.seek(raf.getFilePointer() + tam - 4);
+                }
             }
         }
         return r;
     }
-//Metodo deletar
-    public void deletar(Game r) throws Exception {
-        Integer id;
-        Short tam;
-        Boolean lapide;
-        raf.seek(4);
 
-        while (raf.getFilePointer() < raf.length()) {
-            lapide = raf.readBoolean();
-            tam = raf.readShort();
-            id = raf.readInt();
-            if (id.equals(r.getId()) && !lapide) {
-                raf.seek(raf.getFilePointer() - 7);
-                raf.writeBoolean(true);
-                break;
-            }
-            raf.seek(raf.getFilePointer() + tam - 4);
-        }
-
+    //Metodo deletar, usa o ponteiro que o metodo getby id parou, que conveniente é a lapide desejada
+    public void deletar() throws Exception {
+        raf.writeBoolean(true);
     }
 
 

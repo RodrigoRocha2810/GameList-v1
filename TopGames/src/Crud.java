@@ -5,17 +5,18 @@ import java.util.Objects;
 import java.util.Scanner;
 
 public class Crud {
+
     private Scanner scan;
     private Game game;
     ControlDb controller;
 
     public Crud() throws Exception {
-    controller = new ControlDb();
-    scan = new Scanner(System.in);
-    game = new Game();   
-}
+        controller = new ControlDb();
+        scan = new Scanner(System.in);
+        game = new Game();
+    }
 
-public void run() throws IOException {
+    public void run() throws IOException {
         Boolean active = true;
         while (active) {
             // System.out.print("\033c");// Limpa a tela(ANSI escape character)
@@ -32,7 +33,7 @@ public void run() throws IOException {
                     inserir();
                     break;
                 case 3:
-                  //  alterar();
+                    //  alterar();
                     break;
                 case 4:
                     deletar();
@@ -48,35 +49,44 @@ public void run() throws IOException {
         }
     }
 
-
+    
     private void deletar() {
-
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        game = null;
+        int ID;
         try {
-            if (Objects.isNull(game)) {
 
-                System.out.print(
-                        "Voc\u00EA precisa buscar um registro para excluir. Digite o ID do registro que quer excluir: ");
-                game = controller.getById(scan.nextInt());
+            System.out.print(
+                    "Voc\u00EA precisa buscar um registro para excluir. Digite o ID do registro que quer excluir: ");
+            ID = scan.nextInt();
+            game = controller.getById(ID);
 
-            }
-            System.out.println("Confirma a exclus\u00E3o (S/N)? ");
-            String aux = scan.next();
-            if (aux.toUpperCase().charAt(0) == 'S') {
-                controller.deletar(game);
+            if (Objects.isNull(game) || game.getId() < 0) {
+                System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                System.out.printf("O id %d nao foi encontrado\n", ID);
+                // Thread.sleep(5000);
+                game = null;
+            } else {
+                System.out.println("Confirma a exclus\u00E3o (S/N)? ");
+
+                String aux = scan.next();
+                if (aux.toUpperCase().charAt(0) == 'S') {
+                    controller.deletar();
+                    System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                    System.out.printf("O id %d foi Deletado\n", ID);
+                }
             }
         } catch (Exception e) {
             System.out.println("Ocorreu um erro ao excluir\n");
             System.out.println("Erro: " + e.getMessage());
         }
+
     }
-
-
-
 
     private void inserir() {
         game = null;
         System.out.print("\033c");// Limpa a tela(ANSI escape character)
-         scan.nextLine();
+        scan.nextLine();
         ////
         System.out.print("Informe o Título do game: ");
         game = new Game();
@@ -153,20 +163,5 @@ public void run() throws IOException {
 
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
