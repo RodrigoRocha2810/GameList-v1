@@ -174,7 +174,7 @@ public class ControlDb {
             // registro será escrito no fim do arquivo;
             // Registros inválidos são tratados após a ordenacao do arquivo;
 
-            if (r.getId() <= 0) {
+            if (r.getId() < 0) {
                 // Criação
                 raf.seek(0);
                 r.setId(raf.readInt());
@@ -205,13 +205,14 @@ public class ControlDb {
                 r = newGameToRam(r);
                 b = r.toByteArray();
                 //Verifica se espaço atual suporta alteraçoes, se sim escreve sobre registro antigo mantendo indicador de tamanho
-                if(b.length<=tamReg){
+                if (b.length <= tamReg) {
                     raf.write(b);
-                }
-                else{
+                } else {
                     raf.seek(pointer);
                     deletar();
                     raf.seek(raf.length());
+                    raf.writeBoolean(false);
+                    raf.writeShort(b.length);
                     raf.write(b);
                 }
 
@@ -234,47 +235,55 @@ public class ControlDb {
         System.out.print("\033c");// Limpa a tela(ANSI escape character)
         switch (op) {
             case 1:
+                scan.nextLine();
                 System.out.print("Informe o Título do game: ");
                 game.settitle(scan.nextLine());
-                scan.nextLine();
+
                 break;
             case 2:
+                scan.nextLine();
                 System.out.print("Informe o ano de Lançamento em dd/mm/yyyy: ");
                 game.setrelease_Date(scan.nextLine());
-                scan.nextLine();
+
                 break;
             case 3:
+                scan.nextLine();
                 System.out.print("Informe o time de desenvolvimento do game (separado por vírgulas): ");
                 String aux = scan.nextLine();
                 game.setteam(Arrays.asList(aux.split(",")));
-                scan.nextLine();
+
                 break;
             case 4:
+                scan.nextLine();
                 System.out.print("Informe a avaliacao de 1 a 5: ");
                 game.setrating(scan.nextFloat());
-                scan.nextLine();
+
                 break;
             case 5:
+                scan.nextLine();
                 System.out.print("Informe o número total de reviews: ");
                 game.setnreviews(scan.nextInt());
-                scan.nextLine();
+
                 break;
             case 6:
+                scan.nextLine();
                 System.out.print("Informe o número total de usuarios que colocaram na wish list: ");
                 game.setwishlist(scan.nextInt());
-                scan.nextLine();
+
                 break;
             case 7:
+                scan.nextLine();
                 System.out.print("Informe os generos do game (separado por vírgulas): ");
                 String aux2 = scan.nextLine();
                 game.setgenres(Arrays.asList(aux2.split(",")));
-                scan.nextLine();
+
                 break;
             case 8:
+                scan.nextLine();
                 System.out.print("Informe um review do game: ");
                 game.setreview(scan.nextLine());
                 System.out.print("\033c");// Limpa a tela(ANSI escape character)
-                scan.nextLine();
+
                 break;
             default:
                 System.out.print("\033c");// Limpa a tela(ANSI escape character)
