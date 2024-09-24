@@ -33,7 +33,7 @@ public class Crud {
                     inserir();
                     break;
                 case 3:
-                      alterar();
+                    alterar();
                     break;
                 case 4:
                     deletar();
@@ -49,7 +49,7 @@ public class Crud {
         }
     }
 
-    private void alterar(){
+    private void alterar() {
         System.out.print("\033c");// Limpa a tela(ANSI escape character)
         game = null;
         int ID;
@@ -65,27 +65,19 @@ public class Crud {
                 System.out.printf("O id %d nao foi encontrado\n", ID);
                 game = null;
             } else {
-                
-                    controller.save(game);
-                    System.out.print("\033c");// Limpa a tela(ANSI escape character)
-                    System.out.printf("O id %d foi Alterado\n", ID);
-                }
-            
+
+                controller.save(game);
+                System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                System.out.printf("O id %d foi Alterado\n", ID);
+            }
+
         } catch (Exception e) {
             System.out.println("Ocorreu um erro ao alterar\n");
             System.out.println("Erro: " + e.getMessage());
         }
 
-
-
-
-
-
-
-
-
-
     }
+
     private void deletar() {
         System.out.print("\033c");// Limpa a tela(ANSI escape character)
         game = null;
@@ -178,26 +170,38 @@ public class Crud {
 
     private void pesquisar() {
         Integer ID = null;
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
         try {
             System.out.print("\033c");// Limpa a tela(ANSI escape character)
-            System.out.println("Informe o ID do registro a ser buscado: ");
-            ID = scan.nextInt();
-            game = controller.getById(ID);
-            if (Objects.isNull(game) || game.getId() < 0) {
-                System.out.print("\033c");// Limpa a tela(ANSI escape character)
-                System.out.printf("O id %d nao foi encontrado\n", ID);
-                // Thread.sleep(5000);
-                game = null;
-            } else {
-                System.out.print("\033c");// Limpa a tela(ANSI escape character)
-                System.out.println(game.toString() + "\n\n\n");
-            }
+            System.out.println("Informe os ID do registro a ser buscados separados por virgula : ");
+            scan.nextLine();
+            String input = scan.nextLine();
 
+            String[] numberStrings = input.split(",");
+
+            for (String numberString : numberStrings) {
+
+                ID = Integer.parseInt(numberString.trim());
+
+                game = controller.getById(ID);
+                if (Objects.isNull(game) || game.getId() < 0) {
+                    System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                    System.out.printf("O id %d nao foi encontrado\n", ID);
+                    // Thread.sleep(5000);
+                    game = null;
+                } else {
+                    
+                    System.out.println(game.toString() + "\n\n\n");
+                }
+
+            }
+            
         } catch (Exception e) {
             System.out.printf("Erro ao buscar o ID %d\n", ID);
             System.out.printf("Erro causado: %s", e.getMessage());
 
         }
+
     }
 
 }
