@@ -8,8 +8,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
-//classe para funcoes do crud e carregar o CSV
+import java.util.Scanner;
 
 public class ControlDb {
 
@@ -23,8 +24,11 @@ public class ControlDb {
 
     private ArrayList<Integer> listaIds = new ArrayList<>();
 
+    private Scanner scan;
+
     public ControlDb() throws Exception, FileNotFoundException {
         raf = new RandomAccessFile(DbPath.toFile(), "rw");
+        scan = new Scanner(System.in);
     }
 
     //metodo para transferir o csv para um registro game e depois para o arquivo db
@@ -107,7 +111,7 @@ public class ControlDb {
         }
         return null;
     }
-   
+
     //Le o arquivo para uma entidade game
     private Game bdToRam() throws IOException {
         Short tamAux;
@@ -158,6 +162,7 @@ public class ControlDb {
         /////
         return retorno;
     }
+
     // Metodos alterar e inserir
     public Game save(Game r) throws Exception {
         if (Objects.nonNull(raf)) {
@@ -168,8 +173,7 @@ public class ControlDb {
             // válido; o registro antigo será marcado como "excluido" (lapide = true) e o
             // registro será escrito no fim do arquivo;
             // Registros inválidos são tratados após a ordenacao do arquivo;
-            
-        
+
             if (r.getId() <= 0) {
                 // Criação
                 raf.seek(0);
@@ -179,43 +183,38 @@ public class ControlDb {
                 raf.writeBoolean(false);
                 raf.writeShort(b.length);
                 raf.write(b);
-                
-
-
 
                 raf.seek(0);
-                raf.writeInt(r.getId()+1);
+                raf.writeInt(r.getId() + 1);
                 System.out.print("\033c");// Limpa a tela(ANSI escape character)
                 System.out.printf("Id do anime inserido %d\n", r.getId());
             } else {
+                //Atualização
+                byte[] b;
+                Long pointer;
+                Integer idReg;
+                Short tamReg = 0;
+                //Ponterio ja esta no registro desejado devido o metodo getById chamado anteriormente
 
-
-
-
-
-
-
-
-
-
-
-
-
-                else{
-              //Atualização
-
-                System.out.println("atualizando" + r.gettitle());
-                Thread.sleep(5000);
-                    
-                            raf.seek(raf.getFilePointer() - 7);
-                            raf.writeBoolean(true);
-                            raf.seek(raf.length());
-                            raf.write(r.gerarRegistro());
-                            break;
-                        }
-                    }
-                    raf.seek(raf.getFilePointer() + tam - 4);
+                //pula lapide e memoriza ponteiro inicial
+                pointer = raf.getFilePointer();
+                raf.readBoolean();
+                tamReg = raf.readShort();
+                idReg = r.getId();
+                //chama funcao para alterar campos especificos do registro
+                r = newGameToRam(r);
+                b = r.toByteArray();
+                //Verifica se espaço atual suporta alteraçoes, se sim escreve sobre registro antigo mantendo indicador de tamanho
+                if(b.length<=tamReg){
+                    raf.write(b);
                 }
+                else{
+                    raf.seek(pointer);
+                    deletar();
+                    raf.seek(raf.length());
+                    raf.write(b);
+                }
+
             }
         }
         return r;
@@ -226,13 +225,63 @@ public class ControlDb {
         raf.writeBoolean(true);
     }
 
+    public Game newGameToRam(Game game) {
 
+        System.out.println(
+                "1. Alterar Titulo,2. Alterar o ano de Lançamento,3. Alterar o time de desenvolvimento,4. Alterar avaliacao,5. Alterar número de reviews,6. Alterar Wishlist,7. Alterar generos,8. Alterar review");
+        System.out.println("Selecione a opera\u00E7\u00E3o: ");
+        Integer op = scan.nextInt();
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        switch (op) {
+            case 1:
+                System.out.print("Informe o Título do game: ");
+                game.settitle(scan.nextLine());
+                scan.nextLine();
+                break;
+            case 2:
+                System.out.print("Informe o ano de Lançamento em dd/mm/yyyy: ");
+                game.setrelease_Date(scan.nextLine());
+                scan.nextLine();
+                break;
+            case 3:
+                System.out.print("Informe o time de desenvolvimento do game (separado por vírgulas): ");
+                String aux = scan.nextLine();
+                game.setteam(Arrays.asList(aux.split(",")));
+                scan.nextLine();
+                break;
+            case 4:
+                System.out.print("Informe a avaliacao de 1 a 5: ");
+                game.setrating(scan.nextFloat());
+                scan.nextLine();
+                break;
+            case 5:
+                System.out.print("Informe o número total de reviews: ");
+                game.setnreviews(scan.nextInt());
+                scan.nextLine();
+                break;
+            case 6:
+                System.out.print("Informe o número total de usuarios que colocaram na wish list: ");
+                game.setwishlist(scan.nextInt());
+                scan.nextLine();
+                break;
+            case 7:
+                System.out.print("Informe os generos do game (separado por vírgulas): ");
+                String aux2 = scan.nextLine();
+                game.setgenres(Arrays.asList(aux2.split(",")));
+                scan.nextLine();
+                break;
+            case 8:
+                System.out.print("Informe um review do game: ");
+                game.setreview(scan.nextLine());
+                System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                scan.nextLine();
+                break;
+            default:
+                System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                System.out.println("Op\u00E7\u00E3o inv\u00E1lida");
+                break;
 
-
-
-
-
-
+        }
+        return game;
     }
-
-
+}

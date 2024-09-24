@@ -33,7 +33,7 @@ public class Crud {
                     inserir();
                     break;
                 case 3:
-                    //  alterar();
+                      alterar();
                     break;
                 case 4:
                     deletar();
@@ -49,7 +49,43 @@ public class Crud {
         }
     }
 
-    
+    private void alterar(){
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        game = null;
+        int ID;
+        try {
+
+            System.out.print(
+                    "Voc\u00EA precisa buscar um registro para Alterar. Digite o ID do registro que quer Alterar: ");
+            ID = scan.nextInt();
+            game = controller.getById(ID);
+
+            if (Objects.isNull(game) || game.getId() < 0) {
+                System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                System.out.printf("O id %d nao foi encontrado\n", ID);
+                game = null;
+            } else {
+                
+                    controller.save(game);
+                    System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                    System.out.printf("O id %d foi Alterado\n", ID);
+                }
+            
+        } catch (Exception e) {
+            System.out.println("Ocorreu um erro ao alterar\n");
+            System.out.println("Erro: " + e.getMessage());
+        }
+
+
+
+
+
+
+
+
+
+
+    }
     private void deletar() {
         System.out.print("\033c");// Limpa a tela(ANSI escape character)
         game = null;
