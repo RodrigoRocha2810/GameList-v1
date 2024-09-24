@@ -18,13 +18,13 @@ public class ControlDb {
 
     private static final String DB_NAME_OUTPUT = ".\\data.games.db";
 
-    private Path DbPath = Paths.get(DB_NAME_OUTPUT);
+    private final Path DbPath = Paths.get(DB_NAME_OUTPUT);
 
-    private RandomAccessFile raf;
+    private final RandomAccessFile raf;
 
-    private ArrayList<Integer> listaIds = new ArrayList<>();
+    private final ArrayList<Integer> listaIds = new ArrayList<>();
 
-    private Scanner scan;
+    private final Scanner scan;
 
     public ControlDb() throws Exception, FileNotFoundException {
         raf = new RandomAccessFile(DbPath.toFile(), "rw");
@@ -39,26 +39,27 @@ public class ControlDb {
         Path p = Paths.get(CSVfile);
         //usa as bibliotecas bufferdRead e fileReader apra facilitar a leitura do csv
         if (p.toFile().exists() && p.toFile().isFile()) {
-            bf = new BufferedReader(new FileReader(p.toFile()));
-            raf.seek(0);
-            raf.setLength(0);
-            raf.writeInt(maxID);
-            //pula primeira linha(cabecario)
-            String line = bf.readLine();
-            //loop para ler o csv linha a linha e converter no registro Game
-            while ((line = bf.readLine()) != null) {
-                byte[] b;
-                Game registro = new Game(line);
-                b = registro.toByteArray();
-                raf.writeBoolean(false);
-                raf.writeShort(b.length);
-                raf.write(b);
-                maxID++;
+            try (raf) {
+                bf = new BufferedReader(new FileReader(p.toFile()));
+                raf.seek(0);
+                raf.setLength(0);
+                raf.writeInt(maxID);
+                //pula primeira linha(cabecario)
+                String line = bf.readLine();
+                //loop para ler o csv linha a linha e converter no registro Game
+                while ((line = bf.readLine()) != null) {
+                    byte[] b;
+                    Game registro = new Game(line);
+                    b = registro.toByteArray();
+                    raf.writeBoolean(false);
+                    raf.writeShort(b.length);
+                    raf.write(b);
+                    maxID++;
+                }
+                //escreve ultimo id registrado
+                raf.seek(0);
+                raf.writeInt(maxID);
             }
-            //escreve ultimo id registrado
-            raf.seek(0);
-            raf.writeInt(maxID);
-            raf.close();
 
         }
     }
@@ -100,9 +101,8 @@ public class ControlDb {
                     }
 
                     raf.seek(raf.getFilePointer() + (tamReg - 4));
-                } catch (Exception e) {
+                } catch (IOException e) {
                     System.out.println("Erro");
-                    e.printStackTrace();
                 }
 
             } while (raf.getFilePointer() < raf.length());
@@ -192,7 +192,6 @@ public class ControlDb {
                 //Atualização
                 byte[] b;
                 Long pointer;
-                Integer idReg;
                 Short tamReg = 0;
                 //Ponterio ja esta no registro desejado devido o metodo getById chamado anteriormente
 
@@ -200,7 +199,6 @@ public class ControlDb {
                 pointer = raf.getFilePointer();
                 raf.readBoolean();
                 tamReg = raf.readShort();
-                idReg = r.getId();
                 //chama funcao para alterar campos especificos do registro
                 r = newGameToRam(r);
                 b = r.toByteArray();
@@ -234,61 +232,53 @@ public class ControlDb {
         Integer op = scan.nextInt();
         System.out.print("\033c");// Limpa a tela(ANSI escape character)
         switch (op) {
-            case 1:
+            case 1 -> {
                 scan.nextLine();
                 System.out.print("Informe o Título do game: ");
                 game.settitle(scan.nextLine());
-
-                break;
-            case 2:
+            }
+            case 2 -> {
                 scan.nextLine();
                 System.out.print("Informe o ano de Lançamento em dd/mm/yyyy: ");
                 game.setrelease_Date(scan.nextLine());
-
-                break;
-            case 3:
+            }
+            case 3 -> {
                 scan.nextLine();
                 System.out.print("Informe o time de desenvolvimento do game (separado por vírgulas): ");
                 String aux = scan.nextLine();
                 game.setteam(Arrays.asList(aux.split(",")));
-
-                break;
-            case 4:
+            }
+            case 4 -> {
                 scan.nextLine();
                 System.out.print("Informe a avaliacao de 1 a 5: ");
                 game.setrating(scan.nextFloat());
-
-                break;
-            case 5:
+            }
+            case 5 -> {
                 scan.nextLine();
                 System.out.print("Informe o número total de reviews: ");
                 game.setnreviews(scan.nextInt());
-
-                break;
-            case 6:
+            }
+            case 6 -> {
                 scan.nextLine();
                 System.out.print("Informe o número total de usuarios que colocaram na wish list: ");
                 game.setwishlist(scan.nextInt());
-
-                break;
-            case 7:
+            }
+            case 7 -> {
                 scan.nextLine();
                 System.out.print("Informe os generos do game (separado por vírgulas): ");
                 String aux2 = scan.nextLine();
                 game.setgenres(Arrays.asList(aux2.split(",")));
-
-                break;
-            case 8:
+            }
+            case 8 -> {
                 scan.nextLine();
                 System.out.print("Informe um review do game: ");
                 game.setreview(scan.nextLine());
                 System.out.print("\033c");// Limpa a tela(ANSI escape character)
-
-                break;
-            default:
+            }
+            default -> {
                 System.out.print("\033c");// Limpa a tela(ANSI escape character)
                 System.out.println("Op\u00E7\u00E3o inv\u00E1lida");
-                break;
+            }
 
         }
         return game;

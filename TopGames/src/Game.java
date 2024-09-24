@@ -1,18 +1,14 @@
 
-import java.text.SimpleDateFormat;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 
 public class Game {
 
@@ -42,12 +38,12 @@ public class Game {
     public Game() {
         this.id = -1;
         this.title = "";
-        this.genres = new ArrayList<String>();
+        this.genres = new ArrayList<>();
         this.rating = 0f;
         this.nreviews = 0;
         this.release_Date = 0;
         this.review = "";
-        this.team = new ArrayList<String>();
+        this.team = new ArrayList<>();
         this.cadastro = null;
         this.excluido = false;
     }
@@ -56,7 +52,7 @@ public class Game {
         // Assuming the CSV format is: id, title, team, rating, nreviews, wishlist, genres, review
         String[] values = csvLine.split(";"); // Split by comma or any delimiter
 
-        this.id = Integer.parseInt(values[0].trim()); // Convert String to Integer
+        this.id = Integer.valueOf(values[0].trim()); // Convert String to Integer
         this.title = values[1].trim(); // Parse title
 
         // Parse release_Date as a short
@@ -65,9 +61,9 @@ public class Game {
         // Parse the team into a List<String> (assuming team members are separated by semicolons)
         this.team = Arrays.asList(values[3].trim().split(":"));
 
-        this.rating = Float.parseFloat(values[4].trim()); // Convert to Float
-        this.nreviews = Integer.parseInt(values[5].trim()); // Convert to Integer
-        this.wishlist = Integer.parseInt(values[6].trim()); // Convert to Integer
+        this.rating = Float.valueOf(values[4].trim()); // Convert to Float
+        this.nreviews = Integer.valueOf(values[5].trim()); // Convert to Integer
+        this.wishlist = Integer.valueOf(values[6].trim()); // Convert to Integer
 
         // Parse the genres into a List<String> (assuming genres are separated by semicolons)
         this.genres = Arrays.asList(values[7].trim().split(":"));
@@ -77,8 +73,9 @@ public class Game {
 
     @Override
     public String toString() {
-        return "Registro encontrado!\n"
-                + "id=" + id
+        return """
+               Registro encontrado!
+               id=""" + id
                 + ", title='" + title + '\''
                 + ", release_Date=" + release_Date
                 + ", team=" + team

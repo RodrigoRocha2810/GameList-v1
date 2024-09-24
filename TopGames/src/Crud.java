@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 public class Crud {
 
-    private Scanner scan;
+    private final Scanner scan;
     private Game game;
     ControlDb controller;
 
@@ -26,25 +26,15 @@ public class Crud {
             Integer op = scan.nextInt();
             // scan.nextLine();
             switch (op) {
-                case 1:
-                    pesquisar();
-                    break;
-                case 2:
-                    inserir();
-                    break;
-                case 3:
-                    alterar();
-                    break;
-                case 4:
-                    deletar();
-                    break;
-                case 9:
-                    active = false;
-                    break;
-                default:
+                case 1 -> pesquisar();
+                case 2 -> inserir();
+                case 3 -> alterar();
+                case 4 -> deletar();
+                case 9 -> active = false;
+                default -> {
                     System.out.print("\033c");// Limpa a tela(ANSI escape character)
                     System.out.println("Op\u00E7\u00E3o inv\u00E1lida");
-                    break;
+                }
             }
         }
     }
@@ -181,7 +171,7 @@ public class Crud {
 
             for (String numberString : numberStrings) {
 
-                ID = Integer.parseInt(numberString.trim());
+                ID = Integer.valueOf(numberString.trim());
 
                 game = controller.getById(ID);
                 if (Objects.isNull(game) || game.getId() < 0) {
