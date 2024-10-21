@@ -26,6 +26,7 @@ public class ControlDb {
 
     private final Scanner scan;
 
+    
     public ControlDb() throws Exception, FileNotFoundException {
         raf = new RandomAccessFile(DbPath.toFile(), "rw");
         scan = new Scanner(System.in);
@@ -45,7 +46,8 @@ public class ControlDb {
                 raf.setLength(0);
                 raf.writeInt(maxID);
                 //pula primeira linha(cabecario)
-                String line = bf.readLine();
+                String line;
+                bf.readLine();
                 //loop para ler o csv linha a linha e converter no registro Game
                 while ((line = bf.readLine()) != null) {
                     byte[] b;
@@ -70,14 +72,14 @@ public class ControlDb {
             long pointer;
             Game retorno = new Game();
             raf.seek(0);
-            Integer maxID = raf.readInt();
+            Integer maxiID = raf.readInt();
 
-            if (id > maxID) {
+            if (id > maxiID) {
                 throw new Exception("Id solicitado maior que o último id cadastrado");
             }
 
             Boolean lapide;
-            Short tamReg = 0;
+            Short tamReg;
             Integer idReg;
             do {
                 try {
@@ -192,7 +194,7 @@ public class ControlDb {
                 //Atualização
                 byte[] b;
                 Long pointer;
-                Short tamReg = 0;
+                Short tamReg;
                 //Ponterio ja esta no registro desejado devido o metodo getById chamado anteriormente
 
                 //pula lapide e memoriza ponteiro inicial
@@ -283,4 +285,13 @@ public class ControlDb {
         }
         return game;
     }
+
+    public void close() {
+        try {
+            raf.close();
+        } catch (IOException e) {
+            System.out.println("Erro ao fechar o arquivo");
+        }
+    }
+
 }

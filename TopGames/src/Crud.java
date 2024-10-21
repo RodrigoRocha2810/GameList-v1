@@ -26,11 +26,18 @@ public class Crud {
             Integer op = scan.nextInt();
             // scan.nextLine();
             switch (op) {
-                case 1 -> pesquisar();
-                case 2 -> inserir();
-                case 3 -> alterar();
-                case 4 -> deletar();
-                case 9 -> active = false;
+                case 1 ->
+                    pesquisar();
+                case 2 ->
+                    inserir();
+                case 3 ->
+                    alterar();
+                case 4 ->
+                    deletar();
+                case 9 -> {
+                    active = false;
+                    controller.close();
+                }
                 default -> {
                     System.out.print("\033c");// Limpa a tela(ANSI escape character)
                     System.out.println("Op\u00E7\u00E3o inv\u00E1lida");
@@ -180,12 +187,12 @@ public class Crud {
                     // Thread.sleep(5000);
                     game = null;
                 } else {
-                    
+
                     System.out.println(game.toString() + "\n\n\n");
                 }
 
             }
-            
+
         } catch (Exception e) {
             System.out.printf("Erro ao buscar o ID %d\n", ID);
             System.out.printf("Erro causado: %s", e.getMessage());
