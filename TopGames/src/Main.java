@@ -21,12 +21,13 @@ public class Main {
                         System.out.println("===============INFORME O ARQUIVO PARA IMPORTAÇÃO===============");
                         System.out.println("= Essa operação irá sobrescrever os dados atuais              =");
                         System.out.println("===============================================================");
-                        String caminho = "GameList-v1\\TopGames\\games.csv";
+                        String caminho = "GameList-v1\\TopGames\\gamesR.csv";
                         System.out.print("\033c");// Limpa a tela(ANSI escape character)
                         try {
                             controle.LoadCsv(caminho);
                             System.out.print("\033c");// Limpa a tela(ANSI escape character)
                             System.out.println("Carga de dados completa!!!");
+                            controle.close();
                         } catch (IOException e) {
                         }
                     }
