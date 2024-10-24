@@ -187,6 +187,7 @@ public class ControlDb {
                 raf.seek(0);
                 r.setId(raf.readInt());
                 raf.seek(raf.length());
+                r.setEnd_DB(raf.getFilePointer());
                 byte[] b = r.toByteArray();
                 raf.writeBoolean(false);
                 raf.writeShort(b.length);
@@ -319,7 +320,7 @@ public class ControlDb {
             }
         }
     }
-
+    //Metodo para indexacao direta e densa
     private void index_direto() throws IOException {
 
         Game retorno = new Game();
@@ -342,11 +343,8 @@ public class ControlDb {
     public boolean index_criado() {
         try {
 
-            if (rafIndex.length() == 0) {
-                return false;
-            } else {
-                return true;
-            }
+            return rafIndex.length() != 0;
+            
         } catch (IOException ex) {
         }
         return false;
@@ -354,7 +352,6 @@ public class ControlDb {
 
     public Game getByIndex(Integer id) throws Exception {
 
-        long pointer;
         Game retorno = new Game();
         rafIndex.seek(0);
         Integer maxiID = rafIndex.readInt();
@@ -385,6 +382,46 @@ public class ControlDb {
         return null;
 
     }
+
+    public void saveIndex(Game r) throws Exception {
+        if (Objects.nonNull(rafIndex)) {
+            // Ela diferencia somente pela presenta ou não de um ID válido na entidade
+            // enviada como parametro.
+            // Uma entidade nova gera Id negativo e é tratada na primeira condição; Caso a a
+            // entidade possua um id
+            // válido; o registro antigo será marcado como "excluido" (lapide = true) e o
+            // registro será escrito no fim do arquivo;
+            // Registros inválidos são tratados após a ordenacao do arquivo;
+
+            if (r.getId() < 0) {
+                // Criação
+                rafIndex.seek(0);
+                r.setId(rafIndex.readInt());
+                rafIndex.seek(rafIndex.length());
+                rafIndex.writeInt(r.getId());
+                rafIndex.writeLong(r.getEnd_DB());
+
+                rafIndex.seek(0);
+                rafIndex.writeInt(r.getId() + 1);
+               // System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                //System.out.printf("Id do anime inserido %d\n", r.getId());
+            } else {
+                //Atualização
+                Long pointer;
+                //Ponterio ja esta no registro desejado devido o metodo getById chamado anteriormente
+
+                //pula lapide e memoriza ponteiro inicial
+                pointer = rafIndex.getFilePointer();
+                rafIndex.readInt();
+                //chama funcao para alterar campos especificos do registro
+                r = getAlteredGame(r);
+                rafIndex.writeLong(r.getEnd_DB());
+
+            }
+        }
+    }
+
+
 
     //fecha os arquivos
     public void close() {

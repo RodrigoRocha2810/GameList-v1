@@ -159,6 +159,8 @@ public class Crud {
         scan.nextLine();
         try {
             controller.save(game);
+            game.setId(-1);
+            controller.saveIndex(game);
 
         } catch (Exception e) {
             System.out.print("Ocorreu um erro ao salvar a entidade em arquivo\n");
