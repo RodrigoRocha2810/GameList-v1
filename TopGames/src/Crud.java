@@ -34,8 +34,8 @@ public class Crud {
                     alterar();
                 case 4 ->
                     deletar();
-                   // case 5 ->
-                  //  indexar();
+                case 5 ->
+                    indexar();
                 case 9 -> {
                     active = false;
                     controller.close();
@@ -182,7 +182,11 @@ public class Crud {
 
                 ID = Integer.valueOf(numberString.trim());
 
-                game = controller.getById(ID);
+                if (controller.index_criado()) {
+                    game = controller.getByIndex(ID);
+                } else 
+                    game = controller.getById(ID);
+                
                 if (Objects.isNull(game) || game.getId() < 0) {
                     System.out.print("\033c");// Limpa a tela(ANSI escape character)
                     System.out.printf("O id %d nao foi encontrado\n", ID);
@@ -203,73 +207,15 @@ public class Crud {
 
     }
 
+    private void indexar() {
 
-
-
-
-
-
-
-// private void indexar() {
-//         System.out.print("\033c");// Limpa a tela(ANSI escape character)
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-//         System.out.println(
-//             "1. secundário, direto e denso ,2. secundário, indireto e denso,3. secundário, indireto e esparso,9. Sair");
-//     System.out.println("Selecione a opera\u00E7\u00E3o: ");
-//     Integer op = scan.nextInt();
-//     // scan.nextLine();
-//     switch (op) {
-//         case 1 ->
-          
-//         case 2 ->
-           
-//         case 3 ->
-            
-        
-        
-//         default -> {
-//             System.out.print("\033c");// Limpa a tela(ANSI escape character)
-//             System.out.println("Op\u00E7\u00E3o inv\u00E1lida");
-//         }
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-    
-        
-        
-        
-//         try {
-//             System.out.println("Indexando registros...");
-//             controller.index();
-//             System.out.println("Registros indexados com sucesso!");
-//         } catch (Exception e) {
-//             System.out.println("Erro ao indexar registros");
-//             System.out.println("Erro: " + e.getMessage());
-//         }
-//     }
-// }
-
-    
-
-
+        try {
+            System.out.println("Indexando registros...");
+            controller.index();
+            System.out.println("Registros indexados com sucesso!");
+        } catch (IOException e) {
+            System.out.println("Erro ao indexar registros");
+            System.out.println("Erro: " + e.getMessage());
+        }
+    }
 }

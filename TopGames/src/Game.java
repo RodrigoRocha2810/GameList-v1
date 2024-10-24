@@ -24,7 +24,8 @@ public class Game {
 
     private Integer nreviews;
 
-    //add
+    private long end_DB;
+
     private Integer wishlist;
 
     private List<String> genres;
@@ -46,6 +47,8 @@ public class Game {
         this.team = new ArrayList<>();
         this.cadastro = null;
         this.excluido = false;
+        this.wishlist = 0;
+        this.end_DB = -1;
     }
 
     public Game(String csvLine) {
@@ -171,6 +174,10 @@ public class Game {
         return excluido;
     }
 
+    public long getEnd_DB() {
+        return end_DB;
+    }   
+
     // Setters
     public void setId(Integer id) {
         this.id = id;
@@ -222,5 +229,7 @@ public class Game {
         this.excluido = excluido;
     }
 
-
+    public void setEnd_DB(long end_DB) {
+        this.end_DB = end_DB;
+    }
 }

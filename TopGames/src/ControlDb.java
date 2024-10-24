@@ -18,17 +18,21 @@ public class ControlDb {
 
     private static final String DB_NAME_OUTPUT = ".\\data.games.db";
 
+    private static final String INDEX_NAME_OUTPUT = ".\\index.games.db";
+
     private final Path DbPath = Paths.get(DB_NAME_OUTPUT);
 
-    private final RandomAccessFile raf;
+    private final Path IndexPath = Paths.get(INDEX_NAME_OUTPUT);
+
+    private final RandomAccessFile raf, rafIndex;
 
     private final ArrayList<Integer> listaIds = new ArrayList<>();
 
     private final Scanner scan;
 
-    
     public ControlDb() throws Exception, FileNotFoundException {
         raf = new RandomAccessFile(DbPath.toFile(), "rw");
+        rafIndex = new RandomAccessFile(IndexPath.toFile(), "rw");
         scan = new Scanner(System.in);
     }
 
@@ -119,6 +123,8 @@ public class ControlDb {
         Short tamAux;
         byte count;
         Game retorno = new Game();
+        //le endereco de localizacao do registro
+        retorno.setEnd_DB(raf.getFilePointer());
         //le lapide pois nao é nescessaria para esse contexto
         raf.readBoolean();
         //le tam registro pois nao é nescessaria para esse contexto
@@ -202,7 +208,7 @@ public class ControlDb {
                 raf.readBoolean();
                 tamReg = raf.readShort();
                 //chama funcao para alterar campos especificos do registro
-                r = newGameToRam(r);
+                r = getAlteredGame(r);
                 b = r.toByteArray();
                 //Verifica se espaço atual suporta alteraçoes, se sim escreve sobre registro antigo mantendo indicador de tamanho
                 if (b.length <= tamReg) {
@@ -226,7 +232,8 @@ public class ControlDb {
         raf.writeBoolean(true);
     }
 
-    public Game newGameToRam(Game game) {
+    //Metodo para retononar o game com a caracteristica alterada desejada
+    public Game getAlteredGame(Game game) {
 
         System.out.println(
                 "1. Alterar Titulo,2. Alterar o ano de Lançamento,3. Alterar o time de desenvolvimento,4. Alterar avaliacao,5. Alterar número de reviews,6. Alterar Wishlist,7. Alterar generos,8. Alterar review");
@@ -286,8 +293,103 @@ public class ControlDb {
         return game;
     }
 
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////INDEXACAO///////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    //Metodo para deirecionar o tipo de idexacao desejada
+    public void index() throws IOException {
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        System.out.println(
+                "1. secundário, direto e denso ,2. secundário, indireto e denso,3. secundário, indireto e esparso,9. Sair");
+        System.out.println("Selecione a opera\u00E7\u00E3o: ");
+        Integer op = scan.nextInt();
+        switch (op) {
+            case 1 ->
+                index_direto();
+            // case 2 ->
+            //     index_indireto();
+            // case 3 ->
+            //     index_esparco();
+            // 
+            // }
+            default -> {
+                System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                System.out.println("Op\u00E7\u00E3o inv\u00E1lida");
+            }
+        }
+    }
+
+    private void index_direto() throws IOException {
+
+        Game retorno = new Game();
+        raf.seek(0);
+        Integer maxiID = raf.readInt();
+        rafIndex.writeInt(maxiID);
+        for (int i = 0; i < maxiID; i++) {
+            try {
+                retorno = getById(i);
+                rafIndex.writeInt(retorno.getId());
+                rafIndex.writeLong(retorno.getEnd_DB());
+            } catch (Exception ex) {
+            }
+
+        }
+
+    }
+
+    //verifica existencia de index
+    public boolean index_criado() {
+        try {
+
+            if (rafIndex.length() == 0) {
+                return false;
+            } else {
+                return true;
+            }
+        } catch (IOException ex) {
+        }
+        return false;
+    }
+
+    public Game getByIndex(Integer id) throws Exception {
+
+        long pointer;
+        Game retorno = new Game();
+        rafIndex.seek(0);
+        Integer maxiID = rafIndex.readInt();
+
+        if (id > maxiID) {
+            throw new Exception("Id solicitado maior que o último id cadastrado");
+        }
+
+        Integer idReg;
+        Long endReg;
+        do {
+            try {
+                idReg = rafIndex.readInt();
+                endReg = rafIndex.readLong();
+
+                if (Objects.equals(idReg, id)) {
+                    raf.seek(endReg);
+                    retorno = bdToRam();
+                    return retorno;
+                }
+
+            } catch (IOException e) {
+                System.out.println("Erro");
+            }
+
+        } while (rafIndex.getFilePointer() < rafIndex.length());
+
+        return null;
+
+    }
+
+    //fecha os arquivos
     public void close() {
         try {
+            rafIndex.close();
             raf.close();
         } catch (IOException e) {
             System.out.println("Erro ao fechar o arquivo");
