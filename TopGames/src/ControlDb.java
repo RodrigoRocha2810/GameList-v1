@@ -439,12 +439,13 @@ public class ControlDb {
         rafIndex.seek(0);
         this.maxID = rafIndex.readInt();
         rafIndexI.writeInt(this.maxID);
-        long pointer;
+        long pointer, pointer2;
         short tamAux;
         System.out.println("50%...");
         // loop para criar o index indireto a aprtir do index direto e do banco de dados
         //utilizando o titulo como chave primaia
         do {
+            pointer2 = rafIndexI.getFilePointer();
             rafIndex.readInt();
             pointer = rafIndex.readLong();
             //busca nome do registro no banco de dados
@@ -460,7 +461,7 @@ public class ControlDb {
             System.arraycopy(b, 0, fixedSizeBytes, 0, Math.min(b.length, 100));
             //escreve titulo e ponteiro no index indireto para  o direto
             rafIndexI.write(fixedSizeBytes);
-            rafIndexI.writeLong(pointer);
+            rafIndexI.writeLong(pointer2);
 
         } while (rafIndex.getFilePointer() < rafIndex.length());
 

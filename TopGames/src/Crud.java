@@ -186,7 +186,7 @@ public class Crud {
             System.out.print("\033c");// Limpa a tela(ANSI escape character)
             System.out.println("01 - Perqusiar por Ids, 02 - Pesquisar por titulo(requer indice indireto criado)");
             System.out.println("Selecione a opera\u00E7\u00E3o: ");
-2            Integer op = scan.nextInt();
+            Integer op = scan.nextInt();
             if (op == 2&&controller.indexI_criado()) {
                 System.out.print("\033c");// Limpa a tela(ANSI escape character)
                 System.out.println("Informe o titulo do registro a ser buscado: ");
