@@ -20,11 +20,15 @@ public class ControlDb {
 
     private static final String INDEX_NAME_OUTPUT = ".\\index.games.db";
 
+    private static final String INDEX_I_NAME_OUTPUT = ".\\indexI.games.db";
+
     private final Path DbPath = Paths.get(DB_NAME_OUTPUT);
 
     private final Path IndexPath = Paths.get(INDEX_NAME_OUTPUT);
 
-    private final RandomAccessFile raf, rafIndex;
+    private final Path IndexIPath = Paths.get(INDEX_I_NAME_OUTPUT);
+
+    private final RandomAccessFile raf, rafIndex, rafIndexI;
 
     private final ArrayList<Integer> listaIds = new ArrayList<>();
 
@@ -33,13 +37,14 @@ public class ControlDb {
     public ControlDb() throws Exception, FileNotFoundException {
         raf = new RandomAccessFile(DbPath.toFile(), "rw");
         rafIndex = new RandomAccessFile(IndexPath.toFile(), "rw");
+        rafIndexI = new RandomAccessFile(IndexIPath.toFile(), "rw");
         scan = new Scanner(System.in);
     }
 
     //metodo para transferir o csv para um registro game e depois para o arquivo db
     public void LoadCsv(String CSVfile) throws IOException {
         listaIds.clear();
-        maxID = 0;
+        this.maxID = 0;
         BufferedReader bf;
         Path p = Paths.get(CSVfile);
         //usa as bibliotecas bufferdRead e fileReader apra facilitar a leitura do csv
@@ -48,7 +53,7 @@ public class ControlDb {
                 bf = new BufferedReader(new FileReader(p.toFile()));
                 raf.seek(0);
                 raf.setLength(0);
-                raf.writeInt(maxID);
+                raf.writeInt(this.maxID);
                 //pula primeira linha(cabecario)
                 String line;
                 bf.readLine();
@@ -60,11 +65,11 @@ public class ControlDb {
                     raf.writeBoolean(false);
                     raf.writeShort(b.length);
                     raf.write(b);
-                    maxID++;
+                    this.maxID++;
                 }
                 //escreve ultimo id registrado
                 raf.seek(0);
-                raf.writeInt(maxID);
+                raf.writeInt(this.maxID);
             }
 
         }
@@ -76,9 +81,9 @@ public class ControlDb {
             long pointer;
             Game retorno = new Game();
             raf.seek(0);
-            Integer maxiID = raf.readInt();
+            this.maxID = raf.readInt();
 
-            if (id > maxiID) {
+            if (id > this.maxID) {
                 throw new Exception("Id solicitado maior que o último id cadastrado");
             }
 
@@ -308,10 +313,17 @@ public class ControlDb {
         System.out.println("Selecione a opera\u00E7\u00E3o: ");
         Integer op = scan.nextInt();
         switch (op) {
-            case 1 ->
+            case 1 -> {
+                System.out.println("Indexando registros...");
                 index_direto();
-            // case 2 ->
-            //     index_indireto();
+            }
+            case 2 -> {
+                System.out.println("Indexando registros...");
+                if (!index_criado()) {
+                    index_direto();
+                }
+                index_indireto();
+            }
             // case 3 ->
             //     index_esparco();
             // 
@@ -322,14 +334,15 @@ public class ControlDb {
             }
         }
     }
+
     //Metodo para indexacao direta e densa
     private void index_direto() throws IOException {
 
         Game retorno = new Game();
         raf.seek(0);
-        Integer maxiID = raf.readInt();
-        rafIndex.writeInt(maxiID);
-        for (int i = 0; i < maxiID; i++) {
+        this.maxID = raf.readInt();
+        rafIndex.writeInt(this.maxID);
+        for (int i = 0; i < this.maxID; i++) {
             try {
                 retorno = getById(i);
                 rafIndex.writeInt(retorno.getId());
@@ -346,19 +359,20 @@ public class ControlDb {
         try {
 
             return rafIndex.length() != 0;
-            
+
         } catch (IOException ex) {
         }
         return false;
     }
+
     //Metodo para buscar por id no index
     public Game getByIndex(Integer id) throws Exception {
 
         Game retorno = new Game();
         rafIndex.seek(0);
-        Integer maxiID = rafIndex.readInt();
+        this.maxID = rafIndex.readInt();
 
-        if (id > maxiID) {
+        if (id > this.maxID) {
             throw new Exception("Id solicitado maior que o último id cadastrado");
         }
 
@@ -388,6 +402,7 @@ public class ControlDb {
         return null;
 
     }
+
     //Metodo para salvar no index
     public void saveIndex(Game r) throws Exception {
         if (Objects.nonNull(rafIndex)) {
@@ -409,23 +424,53 @@ public class ControlDb {
 
                 rafIndex.seek(0);
                 rafIndex.writeInt(r.getId() + 1);
-               // System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                // System.out.print("\033c");// Limpa a tela(ANSI escape character)
                 //System.out.printf("Id do anime inserido %d\n", r.getId());
             } else {
                 //Atualização
                 getByIndex(r.getId());
                 rafIndex.writeLong(r.getEnd_DB());
 
-
             }
         }
     }
 
+    public void index_indireto() throws IOException {
+        rafIndex.seek(0);
+        this.maxID = rafIndex.readInt();
+        rafIndexI.writeInt(this.maxID);
+        Integer id;
+        long pointer;
+        short tamAux;
+        String titulo;
+        System.out.println("50%...");
+        // loop para criar o index indireto a aprtir do index direto e do banco de dados
+        //utilizando o titulo como chave primaia
+        do {
+            id = rafIndex.readInt();
+            pointer = rafIndex.readLong();
+            //busca nome do refistro no banco de dados
+            raf.seek(pointer+7);
+            /////Le titulo
+            tamAux = raf.readShort();
+            byte[] b = new byte[tamAux];
+            raf.read(b);
+            ///// 
+            // cria um array de bytes de tamanho fixo(100) para armazenar o título
+            byte[] fixedSizeBytes = new byte[100];
+            // copia o titulo para o array de bytes de tamanho fixo
+            System.arraycopy(b, 0, fixedSizeBytes, 0, Math.min(b.length, 100));
+            //escreve titulo e ponteiro no index indireto para  o direto
+            rafIndexI.write(fixedSizeBytes);
+            rafIndexI.writeLong(pointer);
 
+        } while (rafIndex.getFilePointer() < rafIndex.length());
 
-    //fecha os arquivos
+    }
+
     public void close() {
         try {
+            rafIndexI.close();
             rafIndex.close();
             raf.close();
         } catch (IOException e) {

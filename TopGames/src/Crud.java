@@ -222,7 +222,6 @@ public class Crud {
     private void indexar() {
 
         try {
-            System.out.println("Indexando registros...");
             controller.index();
             System.out.println("Registros indexados com sucesso!");
         } catch (IOException e) {
