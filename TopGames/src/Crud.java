@@ -182,7 +182,27 @@ public class Crud {
         Integer ID = null;
         System.out.print("\033c");// Limpa a tela(ANSI escape character)
         try {
+
             System.out.print("\033c");// Limpa a tela(ANSI escape character)
+            System.out.println("01 - Perqusiar por Ids, 02 - Pesquisar por titulo(requer indice indireto criado)");
+            System.out.println("Selecione a opera\u00E7\u00E3o: ");
+2            Integer op = scan.nextInt();
+            if (op == 2&&controller.indexI_criado()) {
+                System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                System.out.println("Informe o titulo do registro a ser buscado: ");
+                scan.nextLine();
+                String input = scan.nextLine();
+                game = controller.getByIndexI(input);
+                if (Objects.isNull(game) || game.getId() < 0) {
+                    System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                    System.out.printf("O titulo %s nao foi encontrado\n", input);
+                    // Thread.sleep(5000);
+                    game = null;
+                } else  System.out.println(game.toString() + "\n\n\n");
+                
+
+            } else{
+           System.out.print("\033c");// Limpa a tela(ANSI escape character)
             System.out.println("Informe os ID do registro a ser buscados separados por virgula : ");
             scan.nextLine();
             String input = scan.nextLine();
@@ -204,11 +224,9 @@ public class Crud {
                     System.out.printf("O id %d nao foi encontrado\n", ID);
                     // Thread.sleep(5000);
                     game = null;
-                } else {
-
-                    System.out.println(game.toString() + "\n\n\n");
-                }
-
+                } else System.out.println(game.toString() + "\n\n\n");
+                
+            }
             }
 
         } catch (Exception e) {
@@ -222,6 +240,7 @@ public class Crud {
     private void indexar() {
 
         try {
+            
             controller.index();
             System.out.println("Registros indexados com sucesso!");
         } catch (IOException e) {

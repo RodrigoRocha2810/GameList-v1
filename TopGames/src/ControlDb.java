@@ -309,7 +309,7 @@ public class ControlDb {
     public void index() throws IOException {
         System.out.print("\033c");// Limpa a tela(ANSI escape character)
         System.out.println(
-                "1. secundário, direto e denso ,2. secundário, indireto e denso,3. secundário, indireto e esparso,9. Sair");
+                "1.direto e denso, 2.indireto e denso, 3.indireto e esparso,9. Sair");
         System.out.println("Selecione a opera\u00E7\u00E3o: ");
         Integer op = scan.nextInt();
         switch (op) {
@@ -439,17 +439,15 @@ public class ControlDb {
         rafIndex.seek(0);
         this.maxID = rafIndex.readInt();
         rafIndexI.writeInt(this.maxID);
-        Integer id;
         long pointer;
         short tamAux;
-        String titulo;
         System.out.println("50%...");
         // loop para criar o index indireto a aprtir do index direto e do banco de dados
         //utilizando o titulo como chave primaia
         do {
-            id = rafIndex.readInt();
+            rafIndex.readInt();
             pointer = rafIndex.readLong();
-            //busca nome do refistro no banco de dados
+            //busca nome do registro no banco de dados
             raf.seek(pointer+7);
             /////Le titulo
             tamAux = raf.readShort();
@@ -466,6 +464,47 @@ public class ControlDb {
 
         } while (rafIndex.getFilePointer() < rafIndex.length());
 
+    }
+
+    public Game getByIndexI(String title) throws Exception {
+        Game retorno = new Game();
+        rafIndexI.seek(0);
+        this.maxID = rafIndexI.readInt();
+        byte[] b = new byte[100];
+        long pointer;
+        //procura sequencialmente o registro no index
+        do {
+            try {
+                rafIndexI.read(b);
+                if (new String(b, StandardCharsets.UTF_8).trim().equals(title)) {
+                    //utiliza o ponteiro para buscar o registro no index direto
+                    pointer = rafIndexI.readLong();
+                    rafIndex.seek(pointer);
+                    //utiliza o ponteiro do index direto para buscar no arquivo db
+                    pointer = rafIndex.readLong();
+                    raf.seek(pointer);
+                    //le e retorna o registro no arquivo db
+                    retorno = bdToRam();
+                }else  rafIndexI.readLong();
+
+            } catch (IOException e) {
+                System.out.println("Erro");
+            }
+
+        } while (rafIndexI.getFilePointer() < rafIndexI.length());
+
+        return null;
+
+    }
+
+    public boolean indexI_criado() {
+        try {
+
+            return rafIndexI.length() != 0;
+
+        } catch (IOException ex) {
+        }
+        return false;
     }
 
     public void close() {
