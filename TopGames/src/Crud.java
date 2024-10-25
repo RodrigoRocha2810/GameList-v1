@@ -57,7 +57,12 @@ public class Crud {
             System.out.print(
                     "Voc\u00EA precisa buscar um registro para Alterar. Digite o ID do registro que quer Alterar: ");
             ID = scan.nextInt();
-            game = controller.getById(ID);
+
+            if (controller.index_criado()) {
+                game = controller.getByIndex(ID);
+            } else {
+                game = controller.getById(ID);
+            }
 
             if (Objects.isNull(game) || game.getId() < 0) {
                 System.out.print("\033c");// Limpa a tela(ANSI escape character)
@@ -66,6 +71,8 @@ public class Crud {
             } else {
 
                 controller.save(game);
+                if (controller.index_criado()) 
+                    controller.saveIndex(game);   
                 System.out.print("\033c");// Limpa a tela(ANSI escape character)
                 System.out.printf("O id %d foi Alterado\n", ID);
             }
@@ -159,8 +166,10 @@ public class Crud {
         scan.nextLine();
         try {
             controller.save(game);
-            game.setId(-1);
-            controller.saveIndex(game);
+            if (controller.index_criado()) {
+                game.setId(-1);
+                controller.saveIndex(game);
+            }
 
         } catch (Exception e) {
             System.out.print("Ocorreu um erro ao salvar a entidade em arquivo\n");
@@ -186,9 +195,10 @@ public class Crud {
 
                 if (controller.index_criado()) {
                     game = controller.getByIndex(ID);
-                } else 
+                } else {
                     game = controller.getById(ID);
-                
+                }
+
                 if (Objects.isNull(game) || game.getId() < 0) {
                     System.out.print("\033c");// Limpa a tela(ANSI escape character)
                     System.out.printf("O id %d nao foi encontrado\n", ID);

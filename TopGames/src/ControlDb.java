@@ -218,6 +218,8 @@ public class ControlDb {
                     raf.seek(pointer);
                     deletar();
                     raf.seek(raf.length());
+                    pointer = raf.getFilePointer();
+                    r.setEnd_DB(pointer);
                     raf.writeBoolean(false);
                     raf.writeShort(b.length);
                     raf.write(b);
@@ -349,7 +351,7 @@ public class ControlDb {
         }
         return false;
     }
-
+    //Metodo para buscar por id no index
     public Game getByIndex(Integer id) throws Exception {
 
         Game retorno = new Game();
@@ -362,13 +364,17 @@ public class ControlDb {
 
         Integer idReg;
         Long endReg;
+        //procura sequencialmente o registro no index
         do {
             try {
                 idReg = rafIndex.readInt();
                 endReg = rafIndex.readLong();
 
                 if (Objects.equals(idReg, id)) {
+                    //apos encontrar o registro desejado, le o registro no arquivo db a partir do endereco
                     raf.seek(endReg);
+                    //reseta o ponteiro do index para o inicio do registro(para uso posterior em alteracoes)
+                    rafIndex.seek(rafIndex.getFilePointer() - 8);
                     retorno = bdToRam();
                     return retorno;
                 }
@@ -382,7 +388,7 @@ public class ControlDb {
         return null;
 
     }
-
+    //Metodo para salvar no index
     public void saveIndex(Game r) throws Exception {
         if (Objects.nonNull(rafIndex)) {
             // Ela diferencia somente pela presenta ou não de um ID válido na entidade
@@ -407,15 +413,9 @@ public class ControlDb {
                 //System.out.printf("Id do anime inserido %d\n", r.getId());
             } else {
                 //Atualização
-                Long pointer;
-                //Ponterio ja esta no registro desejado devido o metodo getById chamado anteriormente
-
-                //pula lapide e memoriza ponteiro inicial
-                pointer = rafIndex.getFilePointer();
-                rafIndex.readInt();
-                //chama funcao para alterar campos especificos do registro
-                r = getAlteredGame(r);
+                getByIndex(r.getId());
                 rafIndex.writeLong(r.getEnd_DB());
+
 
             }
         }
