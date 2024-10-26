@@ -7,7 +7,7 @@ import java.util.Scanner;
 public class Crud {
 
     private final Scanner scan;
-    private Game game;
+    private Game game, old;
     ControlDb controller;
 
     public Crud() throws Exception {
@@ -69,10 +69,13 @@ public class Crud {
                 System.out.printf("O id %d nao foi encontrado\n", ID);
                 game = null;
             } else {
-
+                //clona o objeto para poder comparar depois
+                old = new Game(game);
+                //altera o objeto no banco de dados
                 controller.save(game);
+                //passa para o indeice o id do registro alterado e o registro antigo(para facilicar busca no indice indireto)
                 if (controller.index_criado()) 
-                    controller.saveIndex(game);   
+                    controller.saveIndex(game,old);   
                 System.out.print("\033c");// Limpa a tela(ANSI escape character)
                 System.out.printf("O id %d foi Alterado\n", ID);
             }
@@ -168,7 +171,7 @@ public class Crud {
             controller.save(game);
             if (controller.index_criado()) {
                 game.setId(-1);
-                controller.saveIndex(game);
+                controller.saveIndex(game, null);
             }
 
         } catch (Exception e) {

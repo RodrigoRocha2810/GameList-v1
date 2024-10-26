@@ -50,6 +50,22 @@ public class Game {
         this.wishlist = 0;
         this.end_DB = -1;
     }
+    //metodo para clonar um objeto game
+    public Game(Game other) {
+        this.id = other.id;
+        this.title = other.title;
+        this.genres = other.genres;
+        this.rating = other.rating;
+        this.nreviews = other.nreviews;
+        this.release_Date = other.release_Date;
+        this.review = other.review;
+        this.team = other.team;
+        this.cadastro = other.cadastro;
+        this.excluido = other.excluido;
+        this.wishlist = other.wishlist;
+        this.end_DB = other.end_DB;
+    }
+
 
     public Game(String csvLine) {
         // Assuming the CSV format is: id, title, team, rating, nreviews, wishlist, genres, review

@@ -364,6 +364,7 @@ public class ControlDb {
         }
         return false;
     }
+
     //Metodo para buscar por id no index
     public Game getByIndex(Integer id) throws Exception {
 
@@ -401,8 +402,9 @@ public class ControlDb {
         return null;
 
     }
+
     //Metodo para salvar no index
-    public void saveIndex(Game r) throws Exception {
+    public void saveIndex(Game r, Game old) throws Exception {
         if (Objects.nonNull(rafIndex)) {
             // Ela diferencia somente pela presenta ou não de um ID válido na entidade
             // enviada como parametro.
@@ -419,15 +421,39 @@ public class ControlDb {
                 rafIndex.seek(rafIndex.length());
                 rafIndex.writeInt(r.getId());
                 rafIndex.writeLong(r.getEnd_DB());
-
+                if (indexI_criado()) {
+                    rafIndexI.seek(rafIndexI.length());
+                    byte[] b = r.gettitle().getBytes();
+                    // cria um array de bytes de tamanho fixo(100) para armazenar o título
+                    byte[] fixedSizeBytes = new byte[100];
+                    // copia o titulo para o array de bytes de tamanho fixo
+                    System.arraycopy(b, 0, fixedSizeBytes, 0, Math.min(b.length, 100));
+                    //escreve titulo e ponteiro no index indireto para  o direto
+                    rafIndexI.write(fixedSizeBytes);
+                    rafIndexI.writeLong(rafIndex.getFilePointer() - 12);
+                }
                 rafIndex.seek(0);
                 rafIndex.writeInt(r.getId() + 1);
+                rafIndexI.seek(0);
+                rafIndexI.writeInt(r.getId() + 1);
                 // System.out.print("\033c");// Limpa a tela(ANSI escape character)
                 //System.out.printf("Id do anime inserido %d\n", r.getId());
             } else {
                 //Atualização
                 getByIndex(r.getId());
                 rafIndex.writeLong(r.getEnd_DB());
+                if(indexI_criado()){
+                    getByIndexI(old.gettitle());
+                    Long pointer = rafIndexI.getFilePointer();
+                    byte[] b = r.gettitle().getBytes();
+                    // cria um array de bytes de tamanho fixo(100) para armazenar o título
+                    byte[] fixedSizeBytes = new byte[100];
+                    // copia o titulo para o array de bytes de tamanho fixo
+                    System.arraycopy(b, 0, fixedSizeBytes, 0, Math.min(b.length, 100));
+                    //escreve titulo e ponteiro no index indireto para  o direto
+                    rafIndexI.write(fixedSizeBytes);
+                    
+                }
 
             }
         }
@@ -437,17 +463,17 @@ public class ControlDb {
         rafIndex.seek(0);
         this.maxID = rafIndex.readInt();
         rafIndexI.writeInt(this.maxID);
-        long pointer, pointer2;
+        long pointer4title, pointer2indexI;
         short tamAux;
         System.out.println("50%...");
         // loop para criar o index indireto a aprtir do index direto e do banco de dados
         //utilizando o titulo como chave primaia
         do {
-            pointer2 = rafIndexI.getFilePointer();
+            pointer2indexI = rafIndex.getFilePointer();
             rafIndex.readInt();
-            pointer = rafIndex.readLong();
+            pointer4title = rafIndex.readLong();
             //busca nome do registro no banco de dados
-            raf.seek(pointer+7);
+            raf.seek(pointer4title + 7);
             /////Le titulo
             tamAux = raf.readShort();
             byte[] b = new byte[tamAux];
@@ -459,7 +485,7 @@ public class ControlDb {
             System.arraycopy(b, 0, fixedSizeBytes, 0, Math.min(b.length, 100));
             //escreve titulo e ponteiro no index indireto para  o direto
             rafIndexI.write(fixedSizeBytes);
-            rafIndexI.writeLong(pointer2);
+            rafIndexI.writeLong(pointer2indexI);
 
         } while (rafIndex.getFilePointer() < rafIndex.length());
 
@@ -470,7 +496,7 @@ public class ControlDb {
         rafIndexI.seek(0);
         this.maxID = rafIndexI.readInt();
         byte[] b = new byte[100];
-        long pointer;
+        long pointer, p;
         //procura sequencialmente o registro no index
         do {
             try {
@@ -478,6 +504,11 @@ public class ControlDb {
                 if (new String(b, StandardCharsets.UTF_8).trim().equals(title)) {
                     //utiliza o ponteiro para buscar o registro no index direto
                     pointer = rafIndexI.readLong();
+
+
+
+                    p = rafIndexI.getFilePointer()-108;
+                    rafIndexI.seek(p);
                     rafIndex.seek(pointer);
                     rafIndex.readInt();
                     //utiliza o ponteiro do index direto para buscar no arquivo db
@@ -486,7 +517,9 @@ public class ControlDb {
                     //le e retorna o registro no arquivo db
                     retorno = bdToRam();
                     return retorno;
-                }else  rafIndexI.readLong();
+                } else {
+                    rafIndexI.readLong();
+                }
 
             } catch (IOException e) {
                 System.out.println("Erro");
