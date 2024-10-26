@@ -338,7 +338,7 @@ public class ControlDb {
     //Metodo para indexacao direta e densa
     private void index_direto() throws IOException {
 
-        Game retorno = new Game();
+        Game retorno;
         raf.seek(0);
         this.maxID = raf.readInt();
         rafIndex.writeInt(this.maxID);
@@ -364,11 +364,10 @@ public class ControlDb {
         }
         return false;
     }
-
     //Metodo para buscar por id no index
     public Game getByIndex(Integer id) throws Exception {
 
-        Game retorno = new Game();
+        Game retorno;
         rafIndex.seek(0);
         this.maxID = rafIndex.readInt();
 
@@ -402,7 +401,6 @@ public class ControlDb {
         return null;
 
     }
-
     //Metodo para salvar no index
     public void saveIndex(Game r) throws Exception {
         if (Objects.nonNull(rafIndex)) {
@@ -468,7 +466,7 @@ public class ControlDb {
     }
 
     public Game getByIndexI(String title) throws Exception {
-        Game retorno = new Game();
+        Game retorno;
         rafIndexI.seek(0);
         this.maxID = rafIndexI.readInt();
         byte[] b = new byte[100];
@@ -481,11 +479,13 @@ public class ControlDb {
                     //utiliza o ponteiro para buscar o registro no index direto
                     pointer = rafIndexI.readLong();
                     rafIndex.seek(pointer);
+                    rafIndex.readInt();
                     //utiliza o ponteiro do index direto para buscar no arquivo db
                     pointer = rafIndex.readLong();
                     raf.seek(pointer);
                     //le e retorna o registro no arquivo db
                     retorno = bdToRam();
+                    return retorno;
                 }else  rafIndexI.readLong();
 
             } catch (IOException e) {
