@@ -444,7 +444,7 @@ public class ControlDb {
                 rafIndex.writeLong(r.getEnd_DB());
                 if(indexI_criado()){
                     getByIndexI(old.gettitle());
-                    Long pointer = rafIndexI.getFilePointer();
+                    rafIndexI.getFilePointer();
                     byte[] b = r.gettitle().getBytes();
                     // cria um array de bytes de tamanho fixo(100) para armazenar o título
                     byte[] fixedSizeBytes = new byte[100];
