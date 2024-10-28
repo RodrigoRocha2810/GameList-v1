@@ -9,6 +9,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -22,15 +24,27 @@ public class ControlDb {
 
     private static final String INDEX_I_NAME_OUTPUT = ".\\indexI.games.db";
 
+    private static final String INDEX_E_MAIN_NAME_OUTPUT = ".\\indexEmain.games.db";
+
     private final Path DbPath = Paths.get(DB_NAME_OUTPUT);
 
     private final Path IndexPath = Paths.get(INDEX_NAME_OUTPUT);
 
     private final Path IndexIPath = Paths.get(INDEX_I_NAME_OUTPUT);
 
-    private final RandomAccessFile raf, rafIndex, rafIndexI;
+    private final Path IndexEmainPath = Paths.get(INDEX_E_MAIN_NAME_OUTPUT);
+
+    private final RandomAccessFile raf, rafIndex, rafIndexI, rafIndexEmain;
 
     private final ArrayList<Integer> listaIds = new ArrayList<>();
+
+    private ArrayList<Long> yearEndList = new ArrayList<>();
+    private ArrayList<Short> yearList = new ArrayList<>();
+    private Map<Short, Integer> yearCountMap = new HashMap<>();
+
+    private ArrayList<Long> teamEndList = new ArrayList<>();
+    private ArrayList<String> teamList = new ArrayList<>();
+    private Map<String, Integer> teamCountMap = new HashMap<>();
 
     private final Scanner scan;
 
@@ -38,6 +52,7 @@ public class ControlDb {
         raf = new RandomAccessFile(DbPath.toFile(), "rw");
         rafIndex = new RandomAccessFile(IndexPath.toFile(), "rw");
         rafIndexI = new RandomAccessFile(IndexIPath.toFile(), "rw");
+        rafIndexEmain = new RandomAccessFile(IndexEmainPath.toFile(), "rw");
         scan = new Scanner(System.in);
     }
 
@@ -301,8 +316,10 @@ public class ControlDb {
         return game;
     }
 
+    //////////////////////////////////////////////////////////////////// 
     ////////////////////////////////////////////////////////////////////
     ////////////////////////////INDEXACAO///////////////////////////////
+    ////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
     //Metodo para deirecionar o tipo de idexacao desejada
@@ -324,16 +341,19 @@ public class ControlDb {
                 }
                 index_indireto();
             }
-            // case 3 ->
-            //     index_esparco();
-            // 
-            // }
+            case 3 ->
+                index_esparco();
+
             default -> {
                 System.out.print("\033c");// Limpa a tela(ANSI escape character)
                 System.out.println("Op\u00E7\u00E3o inv\u00E1lida");
             }
         }
     }
+
+    ////////////////////////////////////////////////////////////////////
+    //////////////////////////INDEX DIRETO//////////////////////////////
+    ////////////////////////////////////////////////////////////////////
 
     //Metodo para indexacao direta e densa
     private void index_direto() throws IOException {
@@ -442,7 +462,7 @@ public class ControlDb {
                 //Atualização
                 getByIndex(r.getId());
                 rafIndex.writeLong(r.getEnd_DB());
-                if(indexI_criado()){
+                if (indexI_criado()) {
                     getByIndexI(old.gettitle());
                     rafIndexI.getFilePointer();
                     byte[] b = r.gettitle().getBytes();
@@ -452,12 +472,17 @@ public class ControlDb {
                     System.arraycopy(b, 0, fixedSizeBytes, 0, Math.min(b.length, 100));
                     //escreve titulo e ponteiro no index indireto para  o direto
                     rafIndexI.write(fixedSizeBytes);
-                    
+
                 }
 
             }
         }
     }
+
+    ////////////////////////////////////////////////////////////////////
+    //////////////////////////INDEX INDIRETO////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
 
     public void index_indireto() throws IOException {
         rafIndex.seek(0);
@@ -505,9 +530,7 @@ public class ControlDb {
                     //utiliza o ponteiro para buscar o registro no index direto
                     pointer = rafIndexI.readLong();
 
-
-
-                    p = rafIndexI.getFilePointer()-108;
+                    p = rafIndexI.getFilePointer() - 108;
                     rafIndexI.seek(p);
                     rafIndex.seek(pointer);
                     rafIndex.readInt();
@@ -541,8 +564,133 @@ public class ControlDb {
         return false;
     }
 
+    ////////////////////////////////////////////////////////////////////
+    //////////////////////////INDEX MULTILISTA//////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+
+    public void index_esparco() throws IOException {
+        index_multilista();
+        System.out.println("Indexando registros...");
+        enderecar_multilista();
+    }
+
+    private void index_multilista() throws IOException {
+        Game retorno;
+        raf.seek(0);
+        rafIndexEmain.seek(0);
+        this.maxID = raf.readInt();
+        int i = 0;
+        Short year;
+        do {
+            try {
+                //le registro para memoria
+                retorno = bdToRam();
+
+                //escreve Lapide
+                rafIndexEmain.writeBoolean(false);
+                //escreve endereco para registro no bd(foi escolido usar o endereco diretamente para evitar o uso de strings de tamanho fixo, que teriam de ter no minimo 100 bytes)
+                rafIndexEmain.writeLong(retorno.getEnd_DB());
+                //escreve ano de lancamento e adiciona a lista de anos com o endereco do index
+                year = retorno.calculateYears(retorno.getrelease_Date());
+                add_year(year);
+                rafIndexEmain.writeShort(year);
+                //escreve o endereco do proximo registro com mesmo ano de lancamento(por enquanto -1)
+                rafIndexEmain.writeLong(-1);//todo
+                //escreve o estudio principal
+
+
+
+
+
+
+                // for (String studio : retorno.getteam()) {
+                //     byte[] b = studio.getBytes();
+                //     byte[] fixedSizeBytes = new byte[50];
+                //     System.arraycopy(b, 0, fixedSizeBytes, 0, Math.min(b.length, 50));
+                //     rafIndexEmain.write(fixedSizeBytes);
+                //     //apenas o primeiro estudio é considerado
+                //     add_team(studio);
+                //     break;
+                // }
+            byte[] b = retorno.gettitle().getBytes();
+                 // cria um array de bytes de tamanho fixo(100) para armazenar o título
+            byte[] fixedSizeBytes = new byte[50];
+            // copia o titulo para o array de bytes de tamanho fixo
+            System.arraycopy(b, 0, fixedSizeBytes, 0, Math.min(b.length, 50));
+            //escreve titulo e ponteiro no index indireto para  o direto
+            rafIndexEmain.write(fixedSizeBytes);
+
+                //escreve o endereco do proximo registro com mesmo estudio principal(por enquanto -1)
+                rafIndexEmain.writeLong(-1);//todo
+                i++;
+            } catch (IOException e) {
+                System.out.println("Erro");
+            }
+
+        } while (raf.getFilePointer() < raf.length());
+
+    }
+
+    //cria uma lista com um hashmap para armazenar os anos e a quantidade de registros com esse ano
+    private void add_year(Short year) {
+        if (yearCountMap.containsKey(year)) {
+            int count = yearCountMap.get(year);
+            yearCountMap.put(year, count + 1);
+        } else {
+            // yearEndList.add(pointer);
+            yearList.add(year);
+            yearCountMap.put(year, 1);
+        }
+    }
+
+    //cria uma lista com um hashmap para armazenar os times e a quantidade de registros com esse time
+    private void add_team(String team) {
+        if (teamCountMap.containsKey(team)) {
+            int count = teamCountMap.get(team);
+            teamCountMap.put(team, count + 1);
+        } else {
+            //teamEndList.add(pointer);
+            teamList.add(team);
+            teamCountMap.put(team, 1);
+        }
+    }
+
+    private void enderecar_multilista() throws IOException {
+        rafIndexEmain.seek(0);
+        int nrepYears;
+        long pointer;
+        //pecorre enderacando os anos
+        for (Short year : yearList) {
+            nrepYears = yearCountMap.get(year);
+            pointer = 0;
+            for (int i = 0; i < nrepYears;) {
+                rafIndexEmain.readBoolean();
+                rafIndexEmain.readLong();
+                if (rafIndexEmain.readShort() == year) {
+                    pointer = rafIndexEmain.getFilePointer() - 11;
+                    yearEndList.add(pointer);
+                    pointer = rafIndexEmain.getFilePointer() + 66;
+                    rafIndexEmain.seek(pointer);
+                    i++;
+                } else {
+                    pointer = rafIndexEmain.getFilePointer() + 66;
+                    if(pointer > 4000)
+                        System.out.println(".()");
+                    rafIndexEmain.seek(pointer);
+                }
+            }
+            for (int i = 0; i < yearEndList.size(); i++) {
+                rafIndexEmain.seek(yearEndList.get(i) + 11);
+                rafIndexEmain.writeLong(yearEndList.get(i + 1));
+            }
+        }
+        yearEndList.clear();
+    }
+
     public void close() {
         try {
+            rafIndexEmain.close();
             rafIndexI.close();
             rafIndex.close();
             raf.close();

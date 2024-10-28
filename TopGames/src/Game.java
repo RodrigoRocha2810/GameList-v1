@@ -18,6 +18,8 @@ public class Game {
 
     private short release_Date;
 
+    private int release_year;
+
     private List<String> team;
 
     private Float rating;
@@ -42,7 +44,8 @@ public class Game {
         this.genres = new ArrayList<>();
         this.rating = 0f;
         this.nreviews = 0;
-        this.release_Date = 0;
+        this.release_Date = -1;
+        this.release_year = -1;
         this.review = "";
         this.team = new ArrayList<>();
         this.cadastro = null;
@@ -58,6 +61,7 @@ public class Game {
         this.rating = other.rating;
         this.nreviews = other.nreviews;
         this.release_Date = other.release_Date;
+        this.release_year = other.release_year;
         this.review = other.review;
         this.team = other.team;
         this.cadastro = other.cadastro;
@@ -68,23 +72,23 @@ public class Game {
 
 
     public Game(String csvLine) {
-        // Assuming the CSV format is: id, title, team, rating, nreviews, wishlist, genres, review
-        String[] values = csvLine.split(";"); // Split by comma or any delimiter
+        
+        String[] values = csvLine.split(";"); 
 
-        this.id = Integer.valueOf(values[0].trim()); // Convert String to Integer
-        this.title = values[1].trim(); // Parse title
+        this.id = Integer.valueOf(values[0].trim()); 
+        this.title = values[1].trim(); 
 
-        // Parse release_Date as a short
+        
         this.release_Date = calculateDays(values[2]);
 
-        // Parse the team into a List<String> (assuming team members are separated by semicolons)
+        
         this.team = Arrays.asList(values[3].trim().split(":"));
 
-        this.rating = Float.valueOf(values[4].trim()); // Convert to Float
-        this.nreviews = Integer.valueOf(values[5].trim()); // Convert to Integer
-        this.wishlist = Integer.valueOf(values[6].trim()); // Convert to Integer
+        this.rating = Float.valueOf(values[4].trim()); 
+        this.nreviews = Integer.valueOf(values[5].trim()); 
+        this.wishlist = Integer.valueOf(values[6].trim()); 
 
-        // Parse the genres into a List<String> (assuming genres are separated by semicolons)
+    
         this.genres = Arrays.asList(values[7].trim().split(":"));
 
         this.review = values[8].trim();  // Trim the review string
@@ -116,6 +120,14 @@ public class Game {
         long daysBetween = ChronoUnit.DAYS.between(inputDate, referenceDate);
 
         return (short) daysBetween;
+    }
+
+    public short calculateYears(short days) {
+        LocalDate referenceDate = LocalDate.of(2025, 1, 1);
+
+        LocalDate inputDate = referenceDate.minusDays(days);
+
+        return (short) inputDate.getYear();
     }
 
 // Tranforma o objeto game para um vetor de bytes seguindo as regras de escrita
@@ -173,6 +185,7 @@ public class Game {
     public short getrelease_Date() {
         return release_Date;
     }
+
 
     public String getreview() {
         return review;
