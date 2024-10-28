@@ -26,6 +26,8 @@ public class ControlDb {
 
     private static final String INDEX_E_MAIN_NAME_OUTPUT = ".\\indexEmain.games.db";
 
+    private static final String INDEX_E_YEAR_NAME_OUTPUT = ".\\indexEYear.games.db";
+
     private final Path DbPath = Paths.get(DB_NAME_OUTPUT);
 
     private final Path IndexPath = Paths.get(INDEX_NAME_OUTPUT);
@@ -34,7 +36,9 @@ public class ControlDb {
 
     private final Path IndexEmainPath = Paths.get(INDEX_E_MAIN_NAME_OUTPUT);
 
-    private final RandomAccessFile raf, rafIndex, rafIndexI, rafIndexEmain;
+    private final Path IndexEYearPath = Paths.get(INDEX_E_YEAR_NAME_OUTPUT);
+
+    private final RandomAccessFile raf, rafIndex, rafIndexI, rafIndexEmain, rafIndexEyear;
 
     private final ArrayList<Integer> listaIds = new ArrayList<>();
 
@@ -53,6 +57,7 @@ public class ControlDb {
         rafIndex = new RandomAccessFile(IndexPath.toFile(), "rw");
         rafIndexI = new RandomAccessFile(IndexIPath.toFile(), "rw");
         rafIndexEmain = new RandomAccessFile(IndexEmainPath.toFile(), "rw");
+        rafIndexEyear = new RandomAccessFile(IndexEYearPath.toFile(), "rw");
         scan = new Scanner(System.in);
     }
 
@@ -573,6 +578,9 @@ public class ControlDb {
         index_multilista();
         System.out.println("Indexando registros...");
         enderecar_multilista();
+        index_year();
+        get_year((short) 2017);
+        System.out.println("Indexando registros...");
     }
 
     private void index_multilista() throws IOException {
@@ -599,11 +607,6 @@ public class ControlDb {
                 rafIndexEmain.writeLong(-1);//todo
                 //escreve o estudio principal
 
-
-
-
-
-
                 // for (String studio : retorno.getteam()) {
                 //     byte[] b = studio.getBytes();
                 //     byte[] fixedSizeBytes = new byte[50];
@@ -613,13 +616,13 @@ public class ControlDb {
                 //     add_team(studio);
                 //     break;
                 // }
-            byte[] b = retorno.gettitle().getBytes();
-                 // cria um array de bytes de tamanho fixo(100) para armazenar o título
-            byte[] fixedSizeBytes = new byte[50];
-            // copia o titulo para o array de bytes de tamanho fixo
-            System.arraycopy(b, 0, fixedSizeBytes, 0, Math.min(b.length, 50));
-            //escreve titulo e ponteiro no index indireto para  o direto
-            rafIndexEmain.write(fixedSizeBytes);
+                byte[] b = retorno.gettitle().getBytes();
+                // cria um array de bytes de tamanho fixo(100) para armazenar o título
+                byte[] fixedSizeBytes = new byte[50];
+                // copia o titulo para o array de bytes de tamanho fixo
+                System.arraycopy(b, 0, fixedSizeBytes, 0, Math.min(b.length, 50));
+                //escreve titulo e ponteiro no index indireto para  o direto
+                rafIndexEmain.write(fixedSizeBytes);
 
                 //escreve o endereco do proximo registro com mesmo estudio principal(por enquanto -1)
                 rafIndexEmain.writeLong(-1);//todo
@@ -663,7 +666,9 @@ public class ControlDb {
         //pecorre enderacando os anos
         for (Short year : yearList) {
             nrepYears = yearCountMap.get(year);
+            rafIndexEmain.seek(0);
             pointer = 0;
+            yearEndList.clear();
             for (int i = 0; i < nrepYears;) {
                 rafIndexEmain.readBoolean();
                 rafIndexEmain.readLong();
@@ -675,21 +680,101 @@ public class ControlDb {
                     i++;
                 } else {
                     pointer = rafIndexEmain.getFilePointer() + 66;
-                    if(pointer > 4000)
-                        System.out.println(".()");
                     rafIndexEmain.seek(pointer);
                 }
             }
             for (int i = 0; i < yearEndList.size(); i++) {
                 rafIndexEmain.seek(yearEndList.get(i) + 11);
-                rafIndexEmain.writeLong(yearEndList.get(i + 1));
+
+                if (i + 1 == yearEndList.size()) {
+                    rafIndexEmain.writeLong(-1);
+                } else {
+                    rafIndexEmain.writeLong(yearEndList.get(i + 1));
+                }
+
+            }
+
+        }
+
+    }
+
+    private void index_year() throws IOException {
+        Short year;
+        rafIndexEyear.seek(0);
+        rafIndexEmain.seek(0);
+
+        for (int i = 0; i < yearList.size(); i++) {
+            year = yearList.get(i);
+            rafIndexEyear.writeShort(year);
+            rafIndexEyear.writeShort(yearCountMap.get(year));
+            rafIndexEmain.seek(0);
+            while (rafIndexEmain.getFilePointer() < rafIndexEmain.length()) {
+                rafIndexEmain.readBoolean();
+                rafIndexEmain.readLong();
+                if (rafIndexEmain.readShort() == year) {
+                    rafIndexEyear.writeLong(rafIndexEmain.getFilePointer() - 11);
+                    break;
+                } else {
+                    rafIndexEmain.seek(rafIndexEmain.getFilePointer() + 66);
+                }
+
             }
         }
+
+        // rafIndexEmain.seek(0);
+        // this.maxID = rafIndexEmain.readInt();
+        // rafIndexI.writeInt(this.maxID);
+        // long pointer;
+        // Short year;
+        // do {
+        //     try {
+        //         rafIndexEmain.readBoolean();
+        //         pointer = rafIndexEmain.readLong();
+        //         year = rafIndexEmain.readShort();
+        //         rafIndexI.writeInt(year);
+        //         rafIndexI.writeLong(pointer);
+        //     } catch (IOException e) {
+        //         System.out.println("Erro");
+        //     }
+        // } while (rafIndexEmain.getFilePointer() < rafIndexEmain.length());
+    }
+
+    private Boolean get_year(Short year) throws IOException {
+        Short nRepYear;
+        Long intial_pointer, pointer;
         yearEndList.clear();
+        rafIndexEyear.seek(0);
+        rafIndexEmain.seek(0);
+        //Encontra ano e ponteiro inical no index de anos
+        while (rafIndexEyear.getFilePointer() < rafIndexEyear.length()) {
+            if (rafIndexEyear.readShort() == year) {
+                nRepYear = rafIndexEyear.readShort();
+                intial_pointer = rafIndexEyear.readLong();
+                //vai para o ponteiro inicial
+                rafIndexEmain.seek(intial_pointer);
+                yearEndList.add(intial_pointer);
+
+                //pecorre os registros com o mesmo ano
+                for (int i = 1; i < nRepYear; i++) {
+                    rafIndexEmain.seek(rafIndexEmain.getFilePointer() + 11);
+                    pointer = rafIndexEmain.readLong();
+                    rafIndexEmain.seek(pointer);
+                    yearEndList.add(pointer);
+                }
+                return true;
+
+               
+            } else {
+                rafIndexEyear.seek(rafIndexEyear.getFilePointer() + 10);
+            }
+
+        }
+        return false;
     }
 
     public void close() {
         try {
+            rafIndexEmain.seek(0);
             rafIndexEmain.close();
             rafIndexI.close();
             rafIndex.close();
