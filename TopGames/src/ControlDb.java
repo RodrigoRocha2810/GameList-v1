@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Scanner;
@@ -356,7 +357,6 @@ public class ControlDb {
 
             default -> {
                 System.out.print("\033c");// Limpa a tela(ANSI escape character)
-                System.out.println("Op\u00E7\u00E3o inv\u00E1lida");
             }
         }
     }
@@ -564,6 +564,7 @@ public class ControlDb {
 
     }
 
+    //retorna se o indice foio criado
     public boolean indexI_criado() {
         try {
 
@@ -578,18 +579,112 @@ public class ControlDb {
     //////////////////////////INDEX MULTILISTA//////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-
+    //Chama os metodos para indexar os registros multilista
     public void index_esparco() throws IOException {
-        index_multilista();
-        System.out.println("Indexando registros...");
-        enderecar_multilista();
-        index_year();
-        index_team();
+        if (!indexE_criado()) {
+            System.out.print("\033c");// Limpa a tela(ANSI escape character)
+            System.out.println("Indexando Registros");// Limpa a tela(ANSI escape character)
+            index_multilista();
+        }
+            System.out.print("\033c");// Limpa a tela(ANSI escape character)
+            System.out.println(
+                "1.Pesquisar na multilista por ano x estudio, 9. Sair");
+        System.out.println("Selecione a opera\u00E7\u00E3o: ");
+        Integer op = scan.nextInt();
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        switch (op) {
+            case 1 ->{
+
+                System.out.println("Informe o ano de Lançamento do jogo");
+                Short year = scan.nextShort();
+                System.out.println("Informe o estudio de desenvolvimento do game: ");
+                String team = scan.next();
+                try {
+                    if(!get_year(year)){
+                        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                    System.out.print("Ano não encontrado\n\n");
+                    break;
+                    }
+                    if(!get_team(team)){
+                        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                    System.out.print("Estudio não encontrado\n\n");
+                    break;
+                    }
+
+                } catch (IOException e) {
+                    System.out.println("Erro");
+                }
+
+                List<Long> commonElements = getCommonElements();
+                System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                for (Long pointer : commonElements) {
+                    rafIndexEmain.seek(pointer);
+                    Boolean lapide = rafIndexEmain.readBoolean();
+                    if(lapide)
+                        continue;
+                    raf.seek(rafIndexEmain.readLong());
+
+                    Game game = bdToRam();
+                    
+                    System.out.println(game.toString() + "\n\n\n");
+                }
+
+            }
+            default -> {
+                System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                System.out.println("Op\u00E7\u00E3o inv\u00E1lida");
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         // get_year((short) 2017);
         //get_team("Nintendo");
 
     }
 
+    //rotana a intercecao entre os registros com o mesmo ano e estudio principal
+    public List<Long> getCommonElements() {
+        ArrayList<Long> commonElements = new ArrayList<>(yearEndList);
+        commonElements.retainAll(teamEndList);
+        return commonElements;
+    }
+    //retorna se o indice foi criado
+    private Boolean indexE_criado() {
+        try {
+
+            return rafIndexEmain.length() != 0;
+
+        } catch (IOException ex) {
+        }
+        return false;
+    }
     //cria index multilista (1 byte lapide, 8 bytes endereco para registro no bd, 2 bytes ano de lancamento
     //8 bytes endereco para proximo registro com mesmo ano de lancamento, 50 bytes estudio principal,8 bytes endereco para proximo registro com mesmo estudio principal, total 77 bytes por registro)
     private void index_multilista() throws IOException {
@@ -641,7 +736,7 @@ public class ControlDb {
             }
 
         } while (raf.getFilePointer() < raf.length());
-
+        enderecar_multilista();
     }
 
     //cria uma lista com um hashmap para armazenar os anos e a quantidade de registros com esse ano
@@ -663,12 +758,14 @@ public class ControlDb {
             teamCountMap.put(team, count + 1);
         } else {
             //teamEndList.add(pointer);
-            if (team.equals("Team Reptile")) 
+            if (team.equals("Team Reptile")) {
                 System.out.println("ok");
+            }
             teamList.add(team);
             teamCountMap.put(team, 1);
         }
     }
+
     //Edereca os registros da multilista para apontar para o proximo registro com o mesmo ano ou estudio principal
     private void enderecar_multilista() throws IOException {
         rafIndexEmain.seek(0);
@@ -742,22 +839,12 @@ public class ControlDb {
             }
 
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        //cria index de anos e times
+        index_year();
+        index_team();
 
     }
+
     //cria index de anos
     private void index_year() throws IOException {
         Short year;
@@ -782,6 +869,7 @@ public class ControlDb {
             }
         }
     }
+
     //cria index de times
     private void index_team() throws IOException {
         String team;
@@ -806,27 +894,16 @@ public class ControlDb {
                     rafIndexETeam.writeLong(rafIndexEmain.getFilePointer() - 69);
                     // ok = true;
                     break;
-                } else 
+                } else {
                     rafIndexEmain.seek(rafIndexEmain.getFilePointer() + 8);
+                }
             }
             // if(!ok)
             //         System.err.println("Erro");
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
+
     //retorna se encontrou o ano e cria uma lista com os endereços dos registros com o mesmo ano
     private Boolean get_year(Short year) throws IOException {
         Short nRepYear;
@@ -859,6 +936,7 @@ public class ControlDb {
         }
         return false;
     }
+
     //retorna se encontrou o time e cria uma lista com os endereços dos registros com o mesmo time
     private Boolean get_team(String team) throws IOException {
         Short nRepTeam;
@@ -898,7 +976,8 @@ public class ControlDb {
 
     public void close() {
         try {
-            rafIndexEmain.seek(0);
+            rafIndexEyear.close();
+            rafIndexETeam.close();
             rafIndexEmain.close();
             rafIndexI.close();
             rafIndex.close();
