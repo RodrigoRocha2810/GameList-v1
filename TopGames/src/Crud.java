@@ -73,7 +73,7 @@ public class Crud {
                 old = new Game(game);
                 //altera o objeto no banco de dados
                 controller.save(game);
-                //passa para o indeice o id do registro alterado e o registro antigo(para facilicar busca no indice indireto)
+                //passa para o indice o id do registro alterado e o registro antigo(para facilicar busca no indice indireto)
                 if (controller.index_criado()) 
                     controller.saveIndex(game,old);   
                 System.out.print("\033c");// Limpa a tela(ANSI escape character)
@@ -173,7 +173,11 @@ public class Crud {
                 game.setId(-1);
                 controller.saveIndex(game, null);
             }
-
+            if (controller.indexE_criado()){
+                game.setId(-1);
+                controller.saveindexE(game,old);
+                
+            }
         } catch (Exception e) {
             System.out.print("Ocorreu um erro ao salvar a entidade em arquivo\n");
             System.out.print("Erro: " + e.getMessage());

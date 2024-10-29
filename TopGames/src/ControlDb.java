@@ -29,7 +29,7 @@ public class ControlDb {
 
     private static final String INDEX_E_YEAR_NAME_OUTPUT = ".\\indexEYear.games.db";
 
-    private static final String INDEX_E_Team_NAME_OUTPUT = ".\\indexETeam.games.db";
+    private static final String INDEX_E_TEAM_NAME_OUTPUT = ".\\indexETeam.games.db";
 
     private final Path DbPath = Paths.get(DB_NAME_OUTPUT);
 
@@ -41,7 +41,7 @@ public class ControlDb {
 
     private final Path IndexEYearPath = Paths.get(INDEX_E_YEAR_NAME_OUTPUT);
 
-    private final Path IndexETeamPath = Paths.get(INDEX_E_Team_NAME_OUTPUT);
+    private final Path IndexETeamPath = Paths.get(INDEX_E_TEAM_NAME_OUTPUT);
 
     private final RandomAccessFile raf, rafIndex, rafIndexI, rafIndexEmain, rafIndexEyear, rafIndexETeam;
 
@@ -586,29 +586,29 @@ public class ControlDb {
             System.out.println("Indexando Registros");// Limpa a tela(ANSI escape character)
             index_multilista();
         }
-            System.out.print("\033c");// Limpa a tela(ANSI escape character)
-            System.out.println(
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        System.out.println(
                 "1.Pesquisar na multilista por ano x estudio, 9. Sair");
         System.out.println("Selecione a opera\u00E7\u00E3o: ");
         Integer op = scan.nextInt();
         System.out.print("\033c");// Limpa a tela(ANSI escape character)
         switch (op) {
-            case 1 ->{
+            case 1 -> {
 
                 System.out.println("Informe o ano de Lançamento do jogo");
                 Short year = scan.nextShort();
                 System.out.println("Informe o estudio de desenvolvimento do game: ");
                 String team = scan.next();
                 try {
-                    if(!get_year(year)){
+                    if (!get_year(year)) {
                         System.out.print("\033c");// Limpa a tela(ANSI escape character)
-                    System.out.print("Ano não encontrado\n\n");
-                    break;
+                        System.out.print("Ano não encontrado\n\n");
+                        break;
                     }
-                    if(!get_team(team)){
+                    if (!get_team(team)) {
                         System.out.print("\033c");// Limpa a tela(ANSI escape character)
-                    System.out.print("Estudio não encontrado\n\n");
-                    break;
+                        System.out.print("Estudio não encontrado\n\n");
+                        break;
                     }
 
                 } catch (IOException e) {
@@ -620,12 +620,13 @@ public class ControlDb {
                 for (Long pointer : commonElements) {
                     rafIndexEmain.seek(pointer);
                     Boolean lapide = rafIndexEmain.readBoolean();
-                    if(lapide)
+                    if (lapide) {
                         continue;
+                    }
                     raf.seek(rafIndexEmain.readLong());
 
                     Game game = bdToRam();
-                    
+
                     System.out.println(game.toString() + "\n\n\n");
                 }
 
@@ -636,47 +637,12 @@ public class ControlDb {
             }
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         // get_year((short) 2017);
         //get_team("Nintendo");
-
     }
 
-    //rotana a intercecao entre os registros com o mesmo ano e estudio principal
-    public List<Long> getCommonElements() {
-        ArrayList<Long> commonElements = new ArrayList<>(yearEndList);
-        commonElements.retainAll(teamEndList);
-        return commonElements;
-    }
     //retorna se o indice foi criado
-    private Boolean indexE_criado() {
+    public  Boolean indexE_criado() {
         try {
 
             return rafIndexEmain.length() != 0;
@@ -685,6 +651,7 @@ public class ControlDb {
         }
         return false;
     }
+
     //cria index multilista (1 byte lapide, 8 bytes endereco para registro no bd, 2 bytes ano de lancamento
     //8 bytes endereco para proximo registro com mesmo ano de lancamento, 50 bytes estudio principal,8 bytes endereco para proximo registro com mesmo estudio principal, total 77 bytes por registro)
     private void index_multilista() throws IOException {
@@ -972,6 +939,112 @@ public class ControlDb {
 
         }
         return false;
+    }
+
+    //rotorna a intercecao entre os registros com o mesmo ano e estudio principal
+    public List<Long> getCommonElements() {
+        ArrayList<Long> commonElements = new ArrayList<>(yearEndList);
+        commonElements.retainAll(teamEndList);
+        return commonElements;
+    }
+
+    public void saveindexE(Game r, Game old) throws IOException {
+            Short nRepYear;
+            long endNew;
+
+        if (r.getId() < 0) {
+            //insercao
+            // add ao E main
+            rafIndexEmain.seek(rafIndexEmain.length());
+            endNew = rafIndexEmain.getFilePointer();
+            rafIndexEmain.writeBoolean(false);
+            rafIndexEmain.writeLong(r.getEnd_DB());
+            rafIndexEmain.writeShort(r.getrelease_year());
+            rafIndexEmain.writeLong(-1);
+            for (String studio : r.getteam()) {
+                byte[] b = studio.getBytes();
+                byte[] fixedSizeBytes = new byte[50];
+                System.arraycopy(b, 0, fixedSizeBytes, 0, Math.min(b.length, 50));
+                rafIndexEmain.write(fixedSizeBytes);
+                break;
+            }
+            rafIndexEmain.writeLong(-1);
+            //add ao E year
+            if(get_year(r.getrelease_year())){
+                rafIndexEyear.seek(0);
+                
+                while (rafIndexEyear.getFilePointer() < rafIndexEyear.length()) {
+                    if (rafIndexEyear.readShort() == r.getrelease_year()) {
+                        nRepYear = rafIndexEyear.readShort();
+                        rafIndexEyear.seek(rafIndexEyear.getFilePointer() - 2);
+                        rafIndexEyear.writeShort(nRepYear + 1);
+                        break;
+                    }
+                    rafIndexEyear.seek(rafIndexEyear.getFilePointer() + 10);
+                }}else{
+                rafIndexEyear.writeShort(r.getrelease_year());
+                rafIndexEyear.writeShort(1);
+                rafIndexEyear.writeLong(endNew);    
+                }
+            //add ao E team
+            if(get_team(r.getteam().get(0))){
+                rafIndexETeam.seek(0);
+                
+                while (rafIndexETeam.getFilePointer() < rafIndexETeam.length()) {
+                    byte[] b = r.getteam().get(0).getBytes();
+                    byte[] fixedSizeBytes = new byte[50];
+                    System.arraycopy(b, 0, fixedSizeBytes, 0, Math.min(b.length, 50));
+                    rafIndexETeam.read(fixedSizeBytes);
+                    if (new String(fixedSizeBytes, StandardCharsets.UTF_8).trim().equals(r.getteam().get(0))) {
+                        nRepYear = rafIndexETeam.readShort();
+                        rafIndexETeam.seek(rafIndexETeam.getFilePointer() - 2);
+                        rafIndexETeam.writeShort(nRepYear + 1);
+                        break;
+                    }
+                    rafIndexETeam.seek(rafIndexETeam.getFilePointer() + 10);
+                }
+            }else{
+                byte [] b = r.getteam().get(0).getBytes();
+                byte[] fixedSizeBytes = new byte[50];
+                System.arraycopy(b, 0, fixedSizeBytes, 0, Math.min(b.length, 50));
+                rafIndexETeam.write(fixedSizeBytes);
+                rafIndexETeam.writeShort(1);
+                rafIndexETeam.writeLong(endNew);
+            }
+            //Reenderacamento por ano 
+            if(yearEndList.size() > 1){
+            rafIndexEmain.seek(yearEndList.get(yearEndList.size()-1)+11);
+            rafIndexEmain.writeLong(endNew);}
+            //Reenderacamento por estudio
+            if(teamEndList.size() > 1){
+            rafIndexEmain.seek(teamEndList.get(teamEndList.size()-1)+69);
+            rafIndexEmain.writeLong(endNew);}
+
+
+
+
+
+
+
+
+            }
+         else {
+            //atualizacao
+            if (r.getrelease_year() != old.getrelease_year()) {
+                Long pointer = r.getEnd_DB();
+                while (rafIndexEmain.getFilePointer() < rafIndexEmain.length()) {
+                    if (rafIndexEmain.readBoolean()) {
+                        continue;
+                    }
+                    if (pointer == rafIndexEmain.readLong()) {
+                        rafIndexEmain.seek(rafIndexEmain.getFilePointer() - 8);
+                        rafIndexEmain.writeLong(r.getEnd_DB());
+                        break;
+                    }
+
+                }
+            }
+        }
     }
 
     public void close() {

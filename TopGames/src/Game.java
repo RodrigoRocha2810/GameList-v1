@@ -130,6 +130,15 @@ public class Game {
         return (short) inputDate.getYear();
     }
 
+
+
+
+
+
+
+
+
+
 // Tranforma o objeto game para um vetor de bytes seguindo as regras de escrita
     public byte[] toByteArray() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -186,6 +195,9 @@ public class Game {
         return release_Date;
     }
 
+    public short getrelease_year() {
+        return calculateYears(this.release_Date);
+    }
 
     public String getreview() {
         return review;
