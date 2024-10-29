@@ -584,7 +584,9 @@ public class ControlDb {
         System.out.println("Indexando registros...");
         enderecar_multilista();
         index_year();
+        index_team();
         // get_year((short) 2017);
+        //get_team("Nintendo");
 
     }
 
@@ -661,11 +663,13 @@ public class ControlDb {
             teamCountMap.put(team, count + 1);
         } else {
             //teamEndList.add(pointer);
+            if (team.equals("Team Reptile")) 
+                System.out.println("ok");
             teamList.add(team);
             teamCountMap.put(team, 1);
         }
     }
-
+    //Edereca os registros da multilista para apontar para o proximo registro com o mesmo ano ou estudio principal
     private void enderecar_multilista() throws IOException {
         rafIndexEmain.seek(0);
         int nrep;
@@ -710,6 +714,7 @@ public class ControlDb {
             rafIndexEmain.seek(0);
             pointer = 0;
             teamEndList.clear();
+            //add a lista os enderecos dos registros com o mesmo estudio
             for (int i = 0; i < nrep;) {
                 //vai para posicao do estudio
                 rafIndexEmain.seek(rafIndexEmain.getFilePointer() + 19);
@@ -726,7 +731,7 @@ public class ControlDb {
                 }//hereok
             }
             for (int i = 0; i < teamEndList.size(); i++) {
-                rafIndexEmain.seek(teamEndList.get(i) + 11);
+                rafIndexEmain.seek(teamEndList.get(i) + 69);
 
                 if (i + 1 == teamEndList.size()) {
                     rafIndexEmain.writeLong(-1);
@@ -753,9 +758,9 @@ public class ControlDb {
 
 
     }
-
+    //cria index de anos
     private void index_year() throws IOException {
-        Short team;
+        Short year;
         rafIndexEyear.seek(0);
         rafIndexEmain.seek(0);
 
@@ -777,7 +782,52 @@ public class ControlDb {
             }
         }
     }
+    //cria index de times
+    private void index_team() throws IOException {
+        String team;
+        rafIndexETeam.seek(0);
+        rafIndexEmain.seek(0);
 
+        // Boolean ok = false;
+        for (int i = 0; i < teamList.size(); i++) {
+            // ok = false;
+            team = teamList.get(i);
+            byte[] b = team.getBytes();
+            byte[] fixedSizeBytes = new byte[50];
+            System.arraycopy(b, 0, fixedSizeBytes, 0, Math.min(b.length, 50));
+            rafIndexETeam.write(fixedSizeBytes);
+            rafIndexETeam.writeShort(teamCountMap.get(team));
+            rafIndexEmain.seek(0);
+            while (rafIndexEmain.getFilePointer() < rafIndexEmain.length()) {
+                rafIndexEmain.seek(rafIndexEmain.getFilePointer() + 19);
+                byte[] b2 = new byte[50];
+                rafIndexEmain.read(b2);
+                if (new String(b2, StandardCharsets.UTF_8).trim().equals(team)) {
+                    rafIndexETeam.writeLong(rafIndexEmain.getFilePointer() - 69);
+                    // ok = true;
+                    break;
+                } else 
+                    rafIndexEmain.seek(rafIndexEmain.getFilePointer() + 8);
+            }
+            // if(!ok)
+            //         System.err.println("Erro");
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+    //retorna se encontrou o ano e cria uma lista com os endereços dos registros com o mesmo ano
     private Boolean get_year(Short year) throws IOException {
         Short nRepYear;
         Long intial_pointer, pointer;
@@ -809,48 +859,41 @@ public class ControlDb {
         }
         return false;
     }
-
-    private void index_team() throws IOException {
-        String team;
+    //retorna se encontrou o time e cria uma lista com os endereços dos registros com o mesmo time
+    private Boolean get_team(String team) throws IOException {
+        Short nRepTeam;
+        Long intial_pointer, pointer;
+        teamEndList.clear();
         rafIndexETeam.seek(0);
         rafIndexEmain.seek(0);
+        byte[] b = team.getBytes();
+        byte[] fixedSizeBytes = new byte[50];
+        System.arraycopy(b, 0, fixedSizeBytes, 0, Math.min(b.length, 50));
+        //Encontra estudio e ponteiro inical no index de estudios
+        while (rafIndexETeam.getFilePointer() < rafIndexETeam.length()) {
+            rafIndexETeam.read(fixedSizeBytes);
+            if (new String(fixedSizeBytes, StandardCharsets.UTF_8).trim().equals(team)) {
+                nRepTeam = rafIndexETeam.readShort();
+                intial_pointer = rafIndexETeam.readLong();
+                //vai para o ponteiro inicial
+                rafIndexEmain.seek(intial_pointer);
+                teamEndList.add(intial_pointer);
 
-        for (int i = 0; i < teamList.size(); i++) {
-            team = teamList.get(i);
-            byte[] b = team.getBytes();
-            byte[] fixedSizeBytes = new byte[50];
-            System.arraycopy(b, 0, fixedSizeBytes, 0, Math.min(b.length, 50));
-            rafIndexETeam.write(fixedSizeBytes);
-            rafIndexETeam.writeShort(teamCountMap.get(team));
-            rafIndexEmain.seek(0);
-            while (rafIndexEmain.getFilePointer() < rafIndexEmain.length()) {
-                rafIndexEmain.readBoolean();
-                rafIndexEmain.readLong();
-                byte[] b2 = new byte[50];
-                rafIndexEmain.read(b2);
-                if (new String(b2, StandardCharsets.UTF_8).trim().equals(team)) {
-                    rafIndexETeam.writeLong(rafIndexEmain.getFilePointer() - 61);
-                    break;
-                } else {
-                    rafIndexEmain.seek(rafIndexEmain.getFilePointer() + 16);
+                //pecorre os registros com o mesmo estudio
+                for (int i = 1; i < nRepTeam; i++) {
+                    rafIndexEmain.seek(rafIndexEmain.getFilePointer() + 69);
+                    pointer = rafIndexEmain.readLong();
+                    rafIndexEmain.seek(pointer);
+                    teamEndList.add(pointer);
                 }
+                return true;
 
+            } else {
+                rafIndexETeam.seek(rafIndexETeam.getFilePointer() + 10);
             }
+
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        return false;
     }
 
     public void close() {
