@@ -43,6 +43,8 @@ public class ControlDb {
 
     private final Path IndexETeamPath = Paths.get(INDEX_E_TEAM_NAME_OUTPUT);
 
+
+
     private final RandomAccessFile raf, rafIndex, rafIndexI, rafIndexEmain, rafIndexEyear, rafIndexETeam;
 
     private final ArrayList<Integer> listaIds = new ArrayList<>();
@@ -1047,8 +1049,46 @@ public class ControlDb {
         }
     }
 
+    //////////////////////////////////////////////////////////////////
+    //////////////////////////Compressao//////////////////////////////
+    //////////////////////////////////////////////////////////////////
+
+
+public void comprimir(Byte version) throws FileNotFoundException, IOException{
+    String Compress_NAME_OUTPUT = ".\\data.compressed["+version+"].db";
+    Path CompressPath = Paths.get(Compress_NAME_OUTPUT);
+    RandomAccessFile rafC;
+    rafC = new RandomAccessFile(CompressPath.toFile(), "rw");
+    raf.seek(0);
+    create_dicionario();
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+    rafC.close();
+}
+
+
+    private void create_dicionario() {
+        //inicia dicionario com 
+    }
+
+
+
     public void close() {
         try {
+            
             rafIndexEyear.close();
             rafIndexETeam.close();
             rafIndexEmain.close();

@@ -129,16 +129,7 @@ public class Game {
 
         return (short) inputDate.getYear();
     }
-
-
-
-
-
-
-
-
-
-
+    
 // Tranforma o objeto game para um vetor de bytes seguindo as regras de escrita
     public byte[] toByteArray() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -164,11 +155,6 @@ public class Game {
         dos.writeUTF(this.review);
         return baos.toByteArray();
     }
-
-
-
-
-
 
     // Getters
     public Integer getId() {
