@@ -21,7 +21,7 @@ public class Crud {
         while (active) {
             // System.out.print("\033c");// Limpa a tela(ANSI escape character)
             System.out.println(
-                    "1. Pesquisar registro,2. Criar registro,3. Alterar registro,4. Deletar registro,5. indexar registro,9. Sair");
+                    "1. Pesquisar registro,2. Criar registro,3. Alterar registro,4. Deletar registro,5. Indexar registro,6. Comprimir banco,7. Procurar por padrao,9. Sair");
             System.out.println("Selecione a opera\u00E7\u00E3o: ");
             Integer op = scan.nextInt();
             // scan.nextLine();
@@ -38,6 +38,8 @@ public class Crud {
                     indexar();
                 // case 6 ->
                 //     comprimir();
+                    case 7 -> 
+                        procurar();
                 case 9 -> {
                     active = false;
                     controller.close();
@@ -281,4 +283,18 @@ public class Crud {
     //     return Files.exists(path);
 
     // }
+
+    private void procurar() {
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        System.out.println("Informe o padrão a ser procurado: ");
+        scan.nextLine();
+        String input = scan.nextLine();
+        try {
+            controller.procurar(input);
+        } catch (Exception e) {
+            System.out.println("Erro ao procurar por padrão");
+            System.out.println("Erro: " + e.getMessage());
+        }
+    }
+
 }

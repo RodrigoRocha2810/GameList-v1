@@ -18,8 +18,8 @@ import java.util.Scanner;
 public class ControlDb {
 
     private Integer maxID = 0;
+    
 
-    String grandLine = new String();
 
     private static final String DB_NAME_OUTPUT = ".\\data.games.db";
 
@@ -1079,6 +1079,23 @@ public class ControlDb {
 
 //     }
 
+public void procurar(String input) {
+    System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        System.out.println("Informe o metodo para procurar o padrão: ");
+        scan.nextLine();
+}
+
+
+
+
+
+
+
+
+
+
+
+
     public void close() {
         try {
 
@@ -1092,5 +1109,7 @@ public class ControlDb {
             System.out.println("Erro ao fechar o arquivo");
         }
     }
+
+   
 
 }
