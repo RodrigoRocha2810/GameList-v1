@@ -1,8 +1,5 @@
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Scanner;
@@ -39,8 +36,8 @@ public class Crud {
                     deletar();
                 case 5 ->
                     indexar();
-                case 6 ->
-                    comprimir();
+                // case 6 ->
+                //     comprimir();
                 case 9 -> {
                     active = false;
                     controller.close();
@@ -265,23 +262,23 @@ public class Crud {
         }
     }
 
-    private void comprimir() throws IOException {
-        //verifica versao do arquivo comprimido para poder comprimir
-        String vcompressed = "";
-        Byte b = 1;
-        for (Byte i = 1; i < 10; i++) {
-            vcompressed = "data.compressed[" + i + "].db";
-            if (checkFileExists(vcompressed)) {
-                b = i;
-                break;
-            }
-        }
-        controller.comprimir(b);
-    }
+    // private void comprimir() throws IOException {
+    //     //verifica versao do arquivo comprimido para poder comprimir
+    //     String vcompressed = "";
+    //     Byte b = 1;
+    //     for (Byte i = 1; i < 10; i++) {
+    //         vcompressed = "data.compressed[" + i + "].db";
+    //         if (checkFileExists(vcompressed)) {
+    //             b = i;
+    //             break;
+    //         }
+    //     }
+    //     controller.comprimir(b);
+    // }
 
-    private Boolean checkFileExists(String filePath) {
-        Path path = Paths.get(filePath);
-        return Files.exists(path);
+    // private Boolean checkFileExists(String filePath) {
+    //     Path path = Paths.get(filePath);
+    //     return Files.exists(path);
 
-    }
+    // }
 }

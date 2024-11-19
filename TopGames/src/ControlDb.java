@@ -1054,30 +1054,30 @@ public class ControlDb {
     //////////////////////////////////////////////////////////////////
 
 
-public void comprimir(Byte version) throws FileNotFoundException, IOException {
-        String Compress_NAME_OUTPUT = ".\\data.compressed[" + version + "].db";
-        Path CompressPath = Paths.get(Compress_NAME_OUTPUT);
-        RandomAccessFile rafC;
-        rafC = new RandomAccessFile(CompressPath.toFile(), "rw");
-        raf.seek(0);
-        create_dicionario();
+// public void comprimir(Byte version) throws FileNotFoundException, IOException {
+//         String Compress_NAME_OUTPUT = ".\\data.compressed[" + version + "].db";
+//         Path CompressPath = Paths.get(Compress_NAME_OUTPUT);
+//         RandomAccessFile rafC;
+//         rafC = new RandomAccessFile(CompressPath.toFile(), "rw");
+//         raf.seek(0);
+//         create_dicionario();
 
-        rafC.close();
-    }
+//         rafC.close();
+//     }
 
-    private void create_dicionario() {
-        createGrandLine();
-        String dicionario = new String();
-        char c;
-    }
+//     private void create_dicionario() {
+//         createGrandLine();
+//         String dicionario = new String();
+//         char c;
+//     }
 
-    private void createGrandLine() {
+//     private void createGrandLine() {
 
 
         
 
 
-    }
+//     }
 
     public void close() {
         try {
