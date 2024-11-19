@@ -19,6 +19,8 @@ public class ControlDb {
 
     private Integer maxID = 0;
 
+    String grandLine = new String();
+
     private static final String DB_NAME_OUTPUT = ".\\data.games.db";
 
     private static final String INDEX_NAME_OUTPUT = ".\\index.games.db";
@@ -30,6 +32,8 @@ public class ControlDb {
     private static final String INDEX_E_YEAR_NAME_OUTPUT = ".\\indexEYear.games.db";
 
     private static final String INDEX_E_TEAM_NAME_OUTPUT = ".\\indexETeam.games.db";
+
+    private static final String DICIONARIO_NAME_OUTPUT = ".\\Dicionario.games.db";
 
     private final Path DbPath = Paths.get(DB_NAME_OUTPUT);
 
@@ -43,19 +47,19 @@ public class ControlDb {
 
     private final Path IndexETeamPath = Paths.get(INDEX_E_TEAM_NAME_OUTPUT);
 
+    private final Path DicionarioPath = Paths.get(DICIONARIO_NAME_OUTPUT);
 
-
-    private final RandomAccessFile raf, rafIndex, rafIndexI, rafIndexEmain, rafIndexEyear, rafIndexETeam;
+    private final RandomAccessFile raf, rafIndex, rafIndexI, rafIndexEmain, rafIndexEyear, rafIndexETeam, rafDicionario;
 
     private final ArrayList<Integer> listaIds = new ArrayList<>();
 
-    private ArrayList<Long> yearEndList = new ArrayList<>();
-    private ArrayList<Short> yearList = new ArrayList<>();
-    private Map<Short, Integer> yearCountMap = new HashMap<>();
+    private final ArrayList<Long> yearEndList = new ArrayList<>();
+    private final ArrayList<Short> yearList = new ArrayList<>();
+    private final Map<Short, Integer> yearCountMap = new HashMap<>();
 
-    private ArrayList<Long> teamEndList = new ArrayList<>();
-    private ArrayList<String> teamList = new ArrayList<>();
-    private Map<String, Integer> teamCountMap = new HashMap<>();
+    private final ArrayList<Long> teamEndList = new ArrayList<>();
+    private final ArrayList<String> teamList = new ArrayList<>();
+    private final Map<String, Integer> teamCountMap = new HashMap<>();
 
     private final Scanner scan;
 
@@ -66,6 +70,7 @@ public class ControlDb {
         rafIndexEmain = new RandomAccessFile(IndexEmainPath.toFile(), "rw");
         rafIndexEyear = new RandomAccessFile(IndexEYearPath.toFile(), "rw");
         rafIndexETeam = new RandomAccessFile(IndexETeamPath.toFile(), "rw");
+        rafDicionario = new RandomAccessFile(DicionarioPath.toFile(), "rw");
         scan = new Scanner(System.in);
     }
 
@@ -644,7 +649,7 @@ public class ControlDb {
     }
 
     //retorna se o indice foi criado
-    public  Boolean indexE_criado() {
+    public Boolean indexE_criado() {
         try {
 
             return rafIndexEmain.length() != 0;
@@ -951,8 +956,8 @@ public class ControlDb {
     }
 
     public void saveindexE(Game r, Game old) throws IOException {
-            Short nRepYear;
-            long endNew;
+        Short nRepYear;
+        long endNew;
 
         if (r.getId() < 0) {
             //insercao
@@ -972,9 +977,9 @@ public class ControlDb {
             }
             rafIndexEmain.writeLong(-1);
             //add ao E year
-            if(get_year(r.getrelease_year())){
+            if (get_year(r.getrelease_year())) {
                 rafIndexEyear.seek(0);
-                
+
                 while (rafIndexEyear.getFilePointer() < rafIndexEyear.length()) {
                     if (rafIndexEyear.readShort() == r.getrelease_year()) {
                         nRepYear = rafIndexEyear.readShort();
@@ -983,15 +988,16 @@ public class ControlDb {
                         break;
                     }
                     rafIndexEyear.seek(rafIndexEyear.getFilePointer() + 10);
-                }}else{
+                }
+            } else {
                 rafIndexEyear.writeShort(r.getrelease_year());
                 rafIndexEyear.writeShort(1);
-                rafIndexEyear.writeLong(endNew);    
-                }
+                rafIndexEyear.writeLong(endNew);
+            }
             //add ao E team
-            if(get_team(r.getteam().get(0))){
+            if (get_team(r.getteam().get(0))) {
                 rafIndexETeam.seek(0);
-                
+
                 while (rafIndexETeam.getFilePointer() < rafIndexETeam.length()) {
                     byte[] b = r.getteam().get(0).getBytes();
                     byte[] fixedSizeBytes = new byte[50];
@@ -1005,8 +1011,8 @@ public class ControlDb {
                     }
                     rafIndexETeam.seek(rafIndexETeam.getFilePointer() + 10);
                 }
-            }else{
-                byte [] b = r.getteam().get(0).getBytes();
+            } else {
+                byte[] b = r.getteam().get(0).getBytes();
                 byte[] fixedSizeBytes = new byte[50];
                 System.arraycopy(b, 0, fixedSizeBytes, 0, Math.min(b.length, 50));
                 rafIndexETeam.write(fixedSizeBytes);
@@ -1014,23 +1020,17 @@ public class ControlDb {
                 rafIndexETeam.writeLong(endNew);
             }
             //Reenderacamento por ano 
-            if(yearEndList.size() > 1){
-            rafIndexEmain.seek(yearEndList.get(yearEndList.size()-1)+11);
-            rafIndexEmain.writeLong(endNew);}
-            //Reenderacamento por estudio
-            if(teamEndList.size() > 1){
-            rafIndexEmain.seek(teamEndList.get(teamEndList.size()-1)+69);
-            rafIndexEmain.writeLong(endNew);}
-
-
-
-
-
-
-
-
+            if (yearEndList.size() > 1) {
+                rafIndexEmain.seek(yearEndList.get(yearEndList.size() - 1) + 11);
+                rafIndexEmain.writeLong(endNew);
             }
-         else {
+            //Reenderacamento por estudio
+            if (teamEndList.size() > 1) {
+                rafIndexEmain.seek(teamEndList.get(teamEndList.size() - 1) + 69);
+                rafIndexEmain.writeLong(endNew);
+            }
+
+        } else {
             //atualizacao
             if (r.getrelease_year() != old.getrelease_year()) {
                 Long pointer = r.getEnd_DB();
@@ -1054,41 +1054,34 @@ public class ControlDb {
     //////////////////////////////////////////////////////////////////
 
 
-public void comprimir(Byte version) throws FileNotFoundException, IOException{
-    String Compress_NAME_OUTPUT = ".\\data.compressed["+version+"].db";
-    Path CompressPath = Paths.get(Compress_NAME_OUTPUT);
-    RandomAccessFile rafC;
-    rafC = new RandomAccessFile(CompressPath.toFile(), "rw");
-    raf.seek(0);
-    create_dicionario();
+public void comprimir(Byte version) throws FileNotFoundException, IOException {
+        String Compress_NAME_OUTPUT = ".\\data.compressed[" + version + "].db";
+        Path CompressPath = Paths.get(Compress_NAME_OUTPUT);
+        RandomAccessFile rafC;
+        rafC = new RandomAccessFile(CompressPath.toFile(), "rw");
+        raf.seek(0);
+        create_dicionario();
 
-
-
-
-
-
-
-
-
-
-
-
-
-    
-    
-    rafC.close();
-}
-
-
-    private void create_dicionario() {
-        //inicia dicionario com 
+        rafC.close();
     }
 
+    private void create_dicionario() {
+        createGrandLine();
+        String dicionario = new String();
+        char c;
+    }
 
+    private void createGrandLine() {
+
+
+        
+
+
+    }
 
     public void close() {
         try {
-            
+
             rafIndexEyear.close();
             rafIndexETeam.close();
             rafIndexEmain.close();

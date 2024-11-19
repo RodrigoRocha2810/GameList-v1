@@ -79,8 +79,9 @@ public class Crud {
                 //altera o objeto no banco de dados
                 controller.save(game);
                 //passa para o indice o id do registro alterado e o registro antigo(para facilicar busca no indice indireto)
-                if (controller.index_criado()) 
-                    controller.saveIndex(game,old);   
+                if (controller.index_criado()) {
+                    controller.saveIndex(game, old);
+                }
                 System.out.print("\033c");// Limpa a tela(ANSI escape character)
                 System.out.printf("O id %d foi Alterado\n", ID);
             }
@@ -178,10 +179,10 @@ public class Crud {
                 game.setId(-1);
                 controller.saveIndex(game, null);
             }
-            if (controller.indexE_criado()){
+            if (controller.indexE_criado()) {
                 game.setId(-1);
-                controller.saveindexE(game,old);
-                
+                controller.saveindexE(game, old);
+
             }
         } catch (Exception e) {
             System.out.print("Ocorreu um erro ao salvar a entidade em arquivo\n");
@@ -199,7 +200,7 @@ public class Crud {
             System.out.println("01 - Perqusiar por Ids, 02 - Pesquisar por titulo(requer indice indireto criado)");
             System.out.println("Selecione a opera\u00E7\u00E3o: ");
             Integer op = scan.nextInt();
-            if (op == 2&&controller.indexI_criado()) {
+            if (op == 2 && controller.indexI_criado()) {
                 System.out.print("\033c");// Limpa a tela(ANSI escape character)
                 System.out.println("Informe o titulo do registro a ser buscado: ");
                 scan.nextLine();
@@ -210,35 +211,38 @@ public class Crud {
                     System.out.printf("O titulo %s nao foi encontrado\n", input);
                     // Thread.sleep(5000);
                     game = null;
-                } else  System.out.println(game.toString() + "\n\n\n");
-                
-
-            } else{
-           System.out.print("\033c");// Limpa a tela(ANSI escape character)
-            System.out.println("Informe os ID do registro a ser buscados separados por virgula : ");
-            scan.nextLine();
-            String input = scan.nextLine();
-
-            String[] numberStrings = input.split(",");
-
-            for (String numberString : numberStrings) {
-
-                ID = Integer.valueOf(numberString.trim());
-
-                if (controller.index_criado()) {
-                    game = controller.getByIndex(ID);
                 } else {
-                    game = controller.getById(ID);
+                    System.out.println(game.toString() + "\n\n\n");
                 }
 
-                if (Objects.isNull(game) || game.getId() < 0) {
-                    System.out.print("\033c");// Limpa a tela(ANSI escape character)
-                    System.out.printf("O id %d nao foi encontrado\n", ID);
-                    // Thread.sleep(5000);
-                    game = null;
-                } else System.out.println(game.toString() + "\n\n\n");
-                
-            }
+            } else {
+                System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                System.out.println("Informe os ID do registro a ser buscados separados por virgula : ");
+                scan.nextLine();
+                String input = scan.nextLine();
+
+                String[] numberStrings = input.split(",");
+
+                for (String numberString : numberStrings) {
+
+                    ID = Integer.valueOf(numberString.trim());
+
+                    if (controller.index_criado()) {
+                        game = controller.getByIndex(ID);
+                    } else {
+                        game = controller.getById(ID);
+                    }
+
+                    if (Objects.isNull(game) || game.getId() < 0) {
+                        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                        System.out.printf("O id %d nao foi encontrado\n", ID);
+                        // Thread.sleep(5000);
+                        game = null;
+                    } else {
+                        System.out.println(game.toString() + "\n\n\n");
+                    }
+
+                }
             }
 
         } catch (Exception e) {
@@ -252,7 +256,7 @@ public class Crud {
     private void indexar() {
 
         try {
-            
+
             controller.index();
             System.out.println("Registros indexados com sucesso!");
         } catch (IOException e) {
@@ -261,13 +265,13 @@ public class Crud {
         }
     }
 
-private void comprimir() throws IOException {
-    //verifica versao do arquivo comprimido para poder comprimir
+    private void comprimir() throws IOException {
+        //verifica versao do arquivo comprimido para poder comprimir
         String vcompressed = "";
         Byte b = 1;
-        for(Byte i = 1; i < 10; i++){
-            vcompressed = "data.compressed["+i+"].db";
-            if(checkFileExists(vcompressed)){
+        for (Byte i = 1; i < 10; i++) {
+            vcompressed = "data.compressed[" + i + "].db";
+            if (checkFileExists(vcompressed)) {
                 b = i;
                 break;
             }
@@ -275,13 +279,9 @@ private void comprimir() throws IOException {
         controller.comprimir(b);
     }
 
-
     private Boolean checkFileExists(String filePath) {
         Path path = Paths.get(filePath);
-        if (Files.exists(path)) {
-            return true;
-        } else {
-            return false;
-        }
+        return Files.exists(path);
+
     }
 }
