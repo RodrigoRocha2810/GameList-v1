@@ -63,6 +63,7 @@ public class ControlDb {
 
     private final Scanner scan;
 
+    //construtor
     public ControlDb() throws Exception, FileNotFoundException {
         raf = new RandomAccessFile(DbPath.toFile(), "rw");
         rafIndex = new RandomAccessFile(IndexPath.toFile(), "rw");
@@ -72,6 +73,21 @@ public class ControlDb {
         rafIndexETeam = new RandomAccessFile(IndexETeamPath.toFile(), "rw");
         rafDicionario = new RandomAccessFile(DicionarioPath.toFile(), "rw");
         scan = new Scanner(System.in);
+    }
+
+    //metodo para fechar os arquivos
+    public void close() {
+        try {
+
+            rafIndexEyear.close();
+            rafIndexETeam.close();
+            rafIndexEmain.close();
+            rafIndexI.close();
+            rafIndex.close();
+            raf.close();
+        } catch (IOException e) {
+            System.out.println("Erro ao fechar o arquivo");
+        }
     }
 
     //metodo para transferir o csv para um registro game e depois para o arquivo db
@@ -334,11 +350,7 @@ public class ControlDb {
         return game;
     }
 
-    //////////////////////////////////////////////////////////////////// 
-    ////////////////////////////////////////////////////////////////////
     ////////////////////////////INDEXACAO///////////////////////////////
-    ////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////
 
     //Metodo para deirecionar o tipo de idexacao desejada
     public void index() throws IOException {
@@ -496,10 +508,7 @@ public class ControlDb {
         }
     }
 
-    ////////////////////////////////////////////////////////////////////
     //////////////////////////INDEX INDIRETO////////////////////////////
-    ////////////////////////////////////////////////////////////////////
-
 
     public void index_indireto() throws IOException {
         rafIndex.seek(0);
@@ -582,9 +591,7 @@ public class ControlDb {
         return false;
     }
 
-    ////////////////////////////////////////////////////////////////////
     //////////////////////////INDEX MULTILISTA//////////////////////////
-    ////////////////////////////////////////////////////////////////////
 
     //Chama os metodos para indexar os registros multilista
     public void index_esparco() throws IOException {
@@ -1049,10 +1056,7 @@ public class ControlDb {
         }
     }
 
-    //////////////////////////////////////////////////////////////////
     //////////////////////////Compressao//////////////////////////////
-    //////////////////////////////////////////////////////////////////
-
 
 // public void comprimir(Byte version) throws FileNotFoundException, IOException {
 //         String Compress_NAME_OUTPUT = ".\\data.compressed[" + version + "].db";
@@ -1071,18 +1075,28 @@ public class ControlDb {
 //         char c;
 //     }
 
-//     private void createGrandLine() {
+//     private void createGrandLine() {}
 
 
-        
 
-
-//     }
+    //////////////////////////////////////////////////////////////////
+    //////////////////////////Casamento de padroes////////////////////
+    //////////////////////////////////////////////////////////////////
 
 public void procurar(String input) {
     System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        createGandTLine();
         System.out.println("Informe o metodo para procurar o padrão: ");
         scan.nextLine();
+}
+
+private void createGandTLine(){
+
+
+
+
+
+    
 }
 
 
@@ -1094,21 +1108,7 @@ public void procurar(String input) {
 
 
 
-
-
-    public void close() {
-        try {
-
-            rafIndexEyear.close();
-            rafIndexETeam.close();
-            rafIndexEmain.close();
-            rafIndexI.close();
-            rafIndex.close();
-            raf.close();
-        } catch (IOException e) {
-            System.out.println("Erro ao fechar o arquivo");
-        }
-    }
+    
 
    
 
