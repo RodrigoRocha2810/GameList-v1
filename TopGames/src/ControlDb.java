@@ -18,8 +18,8 @@ import java.util.Scanner;
 public class ControlDb {
 
     private Integer maxID = 0;
-    
 
+    private static String grandTline;
 
     private static final String DB_NAME_OUTPUT = ".\\data.games.db";
 
@@ -1083,33 +1083,22 @@ public class ControlDb {
     //////////////////////////Casamento de padroes////////////////////
     //////////////////////////////////////////////////////////////////
 
-public void procurar(String input) {
-    System.out.print("\033c");// Limpa a tela(ANSI escape character)
+public void procurar(String input) throws IOException {
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
         createGandTLine();
         System.out.println("Informe o metodo para procurar o padrão: ");
         scan.nextLine();
-}
+    }
 
-private void createGandTLine(){
-
-
-
-
-
-    
-}
-
-
-
-
-
-
-
-
-
-
-    
-
-   
+    private void createGandTLine() throws IOException {
+        Game game;
+        grandTline = "";
+        raf.seek(0);
+        do {
+            game = bdToRam();
+            grandTline += game.gettitle();
+            grandTline += game.getreview();
+        } while (raf.getFilePointer() < raf.length());
+    }
 
 }
