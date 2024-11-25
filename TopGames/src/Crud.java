@@ -291,10 +291,9 @@ public class Crud {
         String input = scan.nextLine();
         try {
             controller.procurar(input);
-        } catch (Exception e) {
+        } catch (IOException e) {
             System.out.println("Erro ao procurar por padrão");
             System.out.println("Erro: " + e.getMessage());
         }
     }
-
 }

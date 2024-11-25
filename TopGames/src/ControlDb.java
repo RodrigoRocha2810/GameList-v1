@@ -1,4 +1,3 @@
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -73,6 +72,7 @@ public class ControlDb {
         rafIndexETeam = new RandomAccessFile(IndexETeamPath.toFile(), "rw");
         rafDicionario = new RandomAccessFile(DicionarioPath.toFile(), "rw");
         scan = new Scanner(System.in);
+        grandTline = new String();
     }
 
     //metodo para fechar os arquivos
@@ -1078,27 +1078,71 @@ public class ControlDb {
 //     private void createGrandLine() {}
 
 
-
-    //////////////////////////////////////////////////////////////////
     //////////////////////////Casamento de padroes////////////////////
-    //////////////////////////////////////////////////////////////////
+    
+
+
 
 public void procurar(String input) throws IOException {
         System.out.print("\033c");// Limpa a tela(ANSI escape character)
         createGandTLine();
         System.out.println("Informe o metodo para procurar o padrão: ");
-        scan.nextLine();
+        System.out.println("1. Força Bruta, 2. KMP, 3. BM, 4. Todos");
+        Integer op = scan.nextInt();
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        switch (op) {
+            case 1 ->
+                bruteForce(input);
+            case 2 ->
+                KMP(input);
+            case 3 ->
+                BM(input);
+            default -> {
+                System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                System.out.println("Op\u00E7\u00E3o inv\u00E1lida");
+            }
+        }
     }
 
     private void createGandTLine() throws IOException {
         Game game;
         grandTline = "";
         raf.seek(0);
+        raf.readInt();
         do {
             game = bdToRam();
             grandTline += game.gettitle();
             grandTline += game.getreview();
         } while (raf.getFilePointer() < raf.length());
+    }
+
+    private void bruteForce(String input) {
+        long startTime = System.nanoTime(); // Calcula o tempo de execução
+        int q = 0;
+        int n = grandTline.length();
+        int m = input.length();
+        for (int i = 0; i <= n - m; i++) {
+            int j = 0;
+            while ((j < m) && (grandTline.charAt(i + j) == input.charAt(j))) {
+                j++;
+            }
+            if (j == m) {
+                System.out.println("Padrão encontrado na posição " + i);
+                q++;
+            }
+        }
+    
+        long endTime = System.nanoTime(); // Fim do cálculo do tempo
+        long duration = endTime - startTime; // Tempo total
+        System.out.println("Encontrado o padrao "+ q +" vezes \nTempo de execução força bruta: " + duration + " nanosegundos");
+    }
+
+    private void KMP(String input) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    private void BM(String input) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }
