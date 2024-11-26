@@ -1097,6 +1097,11 @@ public void procurar(String input) throws IOException {
                 KMP(input);
             case 3 ->
                 BM(input);
+            case 4 -> {
+                bruteForce(input);
+                KMP(input);
+                BM(input);
+            }
             default -> {
                 System.out.print("\033c");// Limpa a tela(ANSI escape character)
                 System.out.println("Op\u00E7\u00E3o inv\u00E1lida");
@@ -1138,11 +1143,50 @@ public void procurar(String input) throws IOException {
     }
 
     private void KMP(String input) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        long startTime = System.nanoTime(); // Calcula o tempo de execução
+        int q = 0;
+        int n = grandTline.length();
+        int m = input.length();
+        int[] pi = new int[m];
+        calculaFuncaoKMP(input, pi);
+        int qtd = 0;
+        int i = 0;
+        for (int j = 0; j < n; j++) {
+            while (i > 0 && input.charAt(i) != grandTline.charAt(j)) {
+                i = pi[i - 1];
+            }
+            if (input.charAt(i) == grandTline.charAt(j)) {
+                i++;
+            }
+            if (i == m) {
+                System.out.println("Padrão encontrado na posição " + (j - m + 1));
+                q++;
+                i = pi[i - 1];
+            }
+        }
+        long endTime = System.nanoTime(); // Fim do cálculo do tempo
+        long duration = endTime - startTime; // Tempo total
+        System.out.println("Encontrado o padrao "+ q +" vezes \nTempo de execução KMP: " + duration + " nanosegundos");
     }
+
+    private void calculaFuncaoKMP(String padrao, int[] pi) {
+        int m = padrao.length();
+        int k = 0;
+        pi[0] = 0;
+        for (int q = 1; q < m; q++) {
+            while (k > 0 && padrao.charAt(k) != padrao.charAt(q)) {
+                k = pi[k - 1];
+            }
+            if (padrao.charAt(k) == padrao.charAt(q)) {
+                k++;
+            }
+            pi[q] = k;
+        }
+    }
+
+    
 
     private void BM(String input) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
 }
