@@ -1,3 +1,4 @@
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -1109,6 +1110,7 @@ public void procurar(String input) throws IOException {
         }
     }
 
+    //cria uma string com todos os titulos e reviews do banco de dados
     private void createGandTLine() throws IOException {
         Game game;
         grandTline = "";
@@ -1121,43 +1123,61 @@ public void procurar(String input) throws IOException {
         } while (raf.getFilePointer() < raf.length());
     }
 
+    //algoritmo de força bruta
     private void bruteForce(String input) {
         long startTime = System.nanoTime(); // Calcula o tempo de execução
-        int q = 0;
+        int q = 0;//contador de padroes encontrados
+        int comp = 0;
         int n = grandTline.length();
         int m = input.length();
         for (int i = 0; i <= n - m; i++) {
             int j = 0;
             while ((j < m) && (grandTline.charAt(i + j) == input.charAt(j))) {
                 j++;
+                comp++;
             }
             if (j == m) {
+                comp++;
                 System.out.println("Padrão encontrado na posição " + i);
                 q++;
             }
         }
-    
+
         long endTime = System.nanoTime(); // Fim do cálculo do tempo
         long duration = endTime - startTime; // Tempo total
-        System.out.println("Encontrado o padrao "+ q +" vezes \nTempo de execução força bruta: " + duration + " nanosegundos");
+        System.out.println("Encontrado o padrao " + q + " vezes\nRealizando " + comp + " comparaçoes \nTempo de execução força bruta: " + duration + " nanosegundos\\n"
+                + //
+                " __________________________________________________");
     }
 
     private void KMP(String input) {
         long startTime = System.nanoTime(); // Calcula o tempo de execução
         int q = 0;
+        int comp = 0;
         int n = grandTline.length();
         int m = input.length();
         int[] pi = new int[m];
         calculaFuncaoKMP(input, pi);
-        int qtd = 0;
+        // int qtd = 0;
         int i = 0;
+        //loop externo para percorrer o banco
         for (int j = 0; j < n; j++) {
+            //loop interno para percorrer o padrao com base no pi
+            comp++;
             while (i > 0 && input.charAt(i) != grandTline.charAt(j)) {
-                i = pi[i - 1];
+                if (pi[i - 1] == -1) {
+                    i = 0;
+                } else {
+                    i = pi[i - 1];
+                }
+                comp++;
             }
+            //pula pra proxima letra incrementando posiçao de i no pi
+            comp++;
             if (input.charAt(i) == grandTline.charAt(j)) {
                 i++;
             }
+            //se i for igual ao tamanho do padrao, o padrao foi encontrado
             if (i == m) {
                 System.out.println("Padrão encontrado na posição " + (j - m + 1));
                 q++;
@@ -1166,9 +1186,10 @@ public void procurar(String input) throws IOException {
         }
         long endTime = System.nanoTime(); // Fim do cálculo do tempo
         long duration = endTime - startTime; // Tempo total
-        System.out.println("Encontrado o padrao "+ q +" vezes \nTempo de execução KMP: " + duration + " nanosegundos");
+        System.out.println("Encontrado o padrao " + q + " vezes\n Realizando " + comp + " comparaçoes \nTempo de execução KMP: " + duration + " nanosegundos\n __________________________________________________");
     }
 
+    //calcula a funcao para o algoritmo de KMP com melhora
     private void calculaFuncaoKMP(String padrao, int[] pi) {
         int m = padrao.length();
         int k = 0;
@@ -1182,11 +1203,111 @@ public void procurar(String input) throws IOException {
             }
             pi[q] = k;
         }
+        //Corrige funçao para kmp melhorar a eficiencia
+        for (int i = 1; i < m; i++) {
+            if (padrao.charAt(i) == padrao.charAt(pi[i - 1])) {
+                if (pi[i - 1] == 0) {
+                    pi[i - 1] = -1;
+                } else {
+                    pi[i - 1] = pi[pi[i - 1] - 1];
+
+                }
+
+            }
+        }
     }
 
-    
-
     private void BM(String input) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        long startTime = System.nanoTime(); // Calcula o tempo de execução
+        int q = 0;
+        int comp = 0;
+        int n = grandTline.length();
+        int m = input.length();
+        int[] ruimC = new int[256];
+        int[] bomC = new int[m];
+        //calcula os carateres bom e ruim
+        caraterRuim(input, ruimC);
+        caraterBom(input, bomC);
+        int i = 0;
+        //loop externo para percorrer o banco
+        while (i <= n - m) {
+            int j = m - 1;
+            comp++;
+            while (j >= 0 && input.charAt(j) == grandTline.charAt(i + j)) {
+                j--;
+                comp++;
+            }
+            if (j < 0) {
+                System.out.println("Padrão encontrado na posição " + i);
+                q++;
+                i += bomC[0];
+            } else {
+                //compara desloacamento com base no carater bom e ruim para escolher o maior
+                i += Math.max(bomC[j], ruimC[grandTline.charAt(i + j)] - m + 1 + j);
+            }
+        }
+        long endTime = System.nanoTime(); // Fim do cálculo do tempo
+        long duration = endTime - startTime; // Tempo total
+        System.out.println("Encontrado o padrao " + q + " vezes\nRealizando " + comp + " comparaçoes \nTempo de execução BM: " + duration + " nanosegundos\n"
+                + //
+                " __________________________________________________");
+    }
+    //funcao auxiliar para o algoritmo de BM para calcular o carater ruim 
+
+    private void caraterRuim(String input, int[] ruimC) {
+        int m = input.length();
+        for (int i = 0; i < ruimC.length; i++) {
+            ruimC[i] = m;
+        }
+        for (int i = 0; i < m - 1; i++) {
+            ruimC[input.charAt(i)] = m - i - 1;
+        }
+    }
+
+    //funcao auxiliar para o algoritmo de BM para calcular o careter bom
+    private void caraterBom(String input, int[] bomC) {
+        int m = input.length();
+        int[] suff = new int[m];
+        suff = suffix(input);
+        for (int i = 0; i < m; i++) {
+            bomC[i] = m;
+        }
+        int j = 0;
+        for (int i = m - 1; i >= 0; i--) {
+            if (suff[i] == i + 1) {
+                for (; j < m - 1 - i; j++) {
+                    if (bomC[j] == m) {
+                        bomC[j] = m - 1 - i;
+                    }
+                }
+            }
+        }
+        for (int i = 0; i <= m - 2; i++) {
+            bomC[m - 1 - suff[i]] = m - 1 - i;
+        }
+    }
+
+    //funcao auxiliar para o algoritmo de BM para calcular o sufixo
+    private int[] suffix(String input) {
+        int m = input.length();
+        int[] suff = new int[m];
+        suff[m - 1] = m;
+        int g = m - 1;
+        int f = 0;
+        for (int i = m - 2; i >= 0; i--) {
+            if (i > g && suff[i + m - 1 - f] < i - g) {
+                suff[i] = suff[i + m - 1 - f];
+            } else {
+                if (i < g) {
+                    g = i;
+                }
+                f = i;
+                while (g >= 0 && input.charAt(g) == input.charAt(g + m - 1 - f)) {
+                    g--;
+                }
+                suff[i] = f - g;
+            }
+        }
+        return suff;
     }
 }
