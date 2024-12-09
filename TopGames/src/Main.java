@@ -21,7 +21,7 @@ public class Main {
                         System.out.println("===============INFORME O ARQUIVO PARA IMPORTAÇÃO===============");
                         System.out.println("= Essa operação irá sobrescrever os dados atuais              =");
                         System.out.println("===============================================================");
-                        String caminho = "GameList-v1\\TopGames\\gamesRM3.csv";
+                        String caminho = "GameList-v1\\GameList-v1\\TopGames\\gamesRM3.csv";
                         System.out.print("\033c");// Limpa a tela(ANSI escape character)
                         try {
                             controle.LoadCsv(caminho);

@@ -1310,4 +1310,61 @@ public void procurar(String input) throws IOException {
         }
         return suff;
     }
+
+    //////////////////////////Criptografia////////////////////
+
+public void procurarCriptp() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'procurarCriptp'");
+    }
+
+    public void criptografar() throws Exception {
+        Game game;
+        System.out.println("Informe id do registro a ter o review criptografado: ");
+        game = getById(scan.nextInt());
+        cifraCezar(game);
+        System.out.println("Review criptografado com sucesso");
+
+    }
+
+    private void cifraCezar(Game game) throws IOException {
+
+        int f, s;
+        f = game.getreview().length();
+        byte[] b;
+
+        String input = game.getreview();
+        Integer deslocamento = 3;
+        String output = "";
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            if (Character.isLetter(c)) {
+                if (Character.isLowerCase(c)) {
+                    c = (char) (c + deslocamento);
+                    if (c > 'z') {
+                        c = (char) (c - 26);
+                    } else if (c < 'a') {
+                        c = (char) (c + 26);
+                    }
+                } else if (Character.isUpperCase(c)) {
+                    c = (char) (c + deslocamento);
+                    if (c > 'Z') {
+                        c = (char) (c - 26);
+                    } else if (c < 'A') {
+                        c = (char) (c + 26);
+                    }
+                }
+            }
+            output += c;
+        }
+        System.out.println("Texto criptografado: " + output);
+        game.setreview(output);
+        s = game.getreview().length();
+        b = game.toByteArray();
+        raf.writeBoolean(false);
+        raf.writeShort(b.length);
+        raf.write(b);
+    }
+
 }

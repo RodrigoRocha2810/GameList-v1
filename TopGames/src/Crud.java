@@ -16,12 +16,12 @@ public class Crud {
         game = new Game();
     }
 
-    public void run() throws IOException {
+    public void run() throws IOException, Exception {
         Boolean active = true;
         while (active) {
             // System.out.print("\033c");// Limpa a tela(ANSI escape character)
             System.out.println(
-                    "1. Pesquisar registro,2. Criar registro,3. Alterar registro,4. Deletar registro,5. Indexar registro,6. Comprimir banco,7. Procurar por padrao,9. Sair");
+                    "1. Pesquisar registro,2. Criar registro,3. Alterar registro,4. Deletar registro,5. Indexar registro,6. Comprimir banco,7. Procurar por padrao,8. Cripografar,9. Sair");
             System.out.println("Selecione a opera\u00E7\u00E3o: ");
             Integer op = scan.nextInt();
             // scan.nextLine();
@@ -38,8 +38,11 @@ public class Crud {
                     indexar();
                 // case 6 ->
                 //     comprimir();
-                    case 7 -> 
-                        procurar();
+                case 7 ->
+                    procurar();
+                case 8 ->
+                    criptografar();
+
                 case 9 -> {
                     active = false;
                     controller.close();
@@ -296,4 +299,27 @@ public class Crud {
             System.out.println("Erro: " + e.getMessage());
         }
     }
+
+
+    private void criptografar() throws Exception {
+
+        System.out.println(
+                "1. criptografar reviews,2. Procurar com descriptografando, 9. Sair");
+        System.out.println("Selecione a opera\u00E7\u00E3o: ");
+        Integer op = scan.nextInt();
+        // scan.nextLine();
+        switch (op) {
+            case 1 ->
+                controller.criptografar();
+            case 2 ->
+                controller.procurarCriptp();
+            default -> {
+                System.out.print("\033c");// Limpa a tela(ANSI escape character)
+                System.out.println("Op\u00E7\u00E3o inv\u00E1lida");
+            }
+        }
+
+    }
+
+
 }
