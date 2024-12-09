@@ -1313,30 +1313,38 @@ public void procurar(String input) throws IOException {
 
     //////////////////////////Criptografia////////////////////
 
-public void procurarCriptp() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'procurarCriptp'");
+public void descriptografar() throws Exception {
+        Game game;
+        int opc;
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
+        System.out.println("Informe id do registro a ter o review descriptografado: ");
+        opc = scan.nextInt();
+        game = getById(opc);
+        decifraColunas(game);
+        getById(opc);
+        decifraCezar(game);
     }
 
     public void criptografar() throws Exception {
         Game game;
+        int opc;
+        System.out.print("\033c");// Limpa a tela(ANSI escape character)
         System.out.println("Informe id do registro a ter o review criptografado: ");
-        game = getById(scan.nextInt());
+        opc = scan.nextInt();
+        game = getById(opc);
         cifraCezar(game);
+        getById(opc);
+        cifraColunas(game);
         System.out.println("Review criptografado com sucesso");
-
     }
 
     private void cifraCezar(Game game) throws IOException {
 
-        int f, s;
-        f = game.getreview().length();
         byte[] b;
 
         String input = game.getreview();
         Integer deslocamento = 3;
         String output = "";
-        System.out.print("\033c");// Limpa a tela(ANSI escape character)
         for (int i = 0; i < input.length(); i++) {
             char c = input.charAt(i);
             if (Character.isLetter(c)) {
@@ -1358,13 +1366,103 @@ public void procurarCriptp() {
             }
             output += c;
         }
-        System.out.println("Texto criptografado: " + output);
         game.setreview(output);
-        s = game.getreview().length();
         b = game.toByteArray();
         raf.writeBoolean(false);
         raf.writeShort(b.length);
         raf.write(b);
     }
 
+    private void decifraCezar(Game game) throws IOException {
+        byte[] b;
+        String input = game.getreview();
+        Integer deslocamento = 3;
+        String output = "";
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            if (Character.isLetter(c)) {
+                if (Character.isLowerCase(c)) {
+                    c = (char) (c - deslocamento);
+                    if (c > 'z') {
+                        c = (char) (c - 26);
+                    } else if (c < 'a') {
+                        c = (char) (c + 26);
+                    }
+                } else if (Character.isUpperCase(c)) {
+                    c = (char) (c - deslocamento);
+                    if (c > 'Z') {
+                        c = (char) (c - 26);
+                    } else if (c < 'A') {
+                        c = (char) (c + 26);
+                    }
+                }
+            }
+            output += c;
+        }
+        game.setreview(output);
+        b = game.toByteArray();
+        raf.writeBoolean(false);
+        raf.writeShort(b.length);
+        raf.write(b);
+    }
+
+    private void cifraColunas(Game game) {
+        byte[] b;
+        String input = game.getreview();
+        String output = "";
+        int n = 3;
+        int m = (int) Math.ceil((double) input.length() / n);
+        char[][] matriz = new char[m][n];
+        int k = 0;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n && k < input.length(); j++) {
+                matriz[i][j] = input.charAt(k);
+                k++;
+            }
+        }
+        for (int j = 0; j < n; j++) {
+            for (int i = 0; i < m; i++) {
+                output += matriz[i][j];
+            }
+        }
+        game.setreview(output);
+        try {
+            b = game.toByteArray();
+            raf.writeBoolean(false);
+            raf.writeShort(b.length);
+            raf.write(b);
+        } catch (IOException e) {
+            System.out.println("Erro");
+        }
+    }
+
+    private void decifraColunas(Game game) {
+        byte[] b;
+        String input = game.getreview();
+        String output = "";
+        int n = 3;
+        int m = (int) Math.ceil((double) input.length() / n);
+        char[][] matriz = new char[m][n];
+        int k = 0;
+        for (int j = 0; j < n; j++) {
+            for (int i = 0; i < m && k < input.length(); i++) {
+                matriz[i][j] = input.charAt(k);
+                k++;
+            }
+        }
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                output += matriz[i][j];
+            }
+        }
+        game.setreview(output);
+        try {
+            b = game.toByteArray();
+            raf.writeBoolean(false);
+            raf.writeShort(b.length);
+            raf.write(b);
+        } catch (IOException e) {
+            System.out.println("Erro");
+        }
+    }
 }
